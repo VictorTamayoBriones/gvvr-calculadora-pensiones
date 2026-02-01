@@ -9,6 +9,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@PublicPages": path.resolve(__dirname, "./src/pages/public"),
+      "@PrivatePages": path.resolve(__dirname, "./src/pages/private"),
     },
   },
 })

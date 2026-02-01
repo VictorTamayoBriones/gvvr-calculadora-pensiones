@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { BarChart3, Calculator, FileText, Home, LogOut, Settings, Users } from "lucide-react"
+import { Calculator, Home, LogOut } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { Link, useNavigate } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
@@ -19,11 +19,11 @@ import LOGO from "@/assets/logo_gvvr.webp"
 
 const menuItems = [
   { title: "Inicio",         icon: Home,       url: "/dashboard" },
-  { title: "Calculadora",   icon: Calculator,  url: "/calculadora" },
-  { title: "Reportes",      icon: FileText,    url: "/reportes" },
-  { title: "Usuarios",      icon: Users,       url: "/usuarios" },
-  { title: "Estadísticas",  icon: BarChart3,   url: "/estadisticas" },
-  { title: "Configuración", icon: Settings,    url: "/configuracion" },
+  { title: "Calculadora",   icon: Calculator,  url: "/calculadora/datosGenerales" },
+  // { title: "Reportes",      icon: FileText,    url: "/reportes" },
+  // { title: "Usuarios",      icon: Users,       url: "/usuarios" },
+  // { title: "Estadísticas",  icon: BarChart3,   url: "/estadisticas" },
+  // { title: "Configuración", icon: Settings,    url: "/configuracion" },
 ]
 
 export default function AppSidebar() {

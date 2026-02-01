@@ -1,26 +1,42 @@
+import { addComa } from "@/helpers/formatText"
+
 export default function Dashboard() {
+
+  const STATS = [
+    {
+      label: 'Cotizaciones del día',
+      stat: '12'
+    },
+    {
+      label: 'Cotizaciones de la semana',
+      stat: '275'
+    },
+    {
+      label: 'Cotizaciones del mes',
+      stat: '1200'
+    },
+    {
+      label: 'Cotizaciones del año',
+      stat: '14500'
+    }
+  ]
+
   return (
     <>
       <h1 className="text-lg font-semibold">Dashboard</h1>
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="aspect-video rounded-xl bg-muted/50 p-4">
-          <h3 className="font-semibold">Card 1</h3>
-          <p className="text-sm text-muted-foreground">Contenido aquí</p>
-        </div>
-        <div className="aspect-video rounded-xl bg-muted/50 p-4">
-          <h3 className="font-semibold">Card 2</h3>
-          <p className="text-sm text-muted-foreground">Contenido aquí</p>
-        </div>
-        <div className="aspect-video rounded-xl bg-muted/50 p-4">
-          <h3 className="font-semibold">Card 3</h3>
-          <p className="text-sm text-muted-foreground">Contenido aquí</p>
-        </div>
-      </div>
-      <div className="flex-1 rounded-xl bg-muted/50 p-4">
-        <h3 className="font-semibold mb-2">Contenido principal</h3>
-        <p className="text-sm text-muted-foreground">
-          Aquí va el contenido principal de tu aplicación
-        </p>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap:'20px' }}>
+        
+        {
+          STATS.map( stat => {
+            return (
+              <div key={JSON.stringify(stat)} className="rounded-xl bg-blue-400 p-4" style={{width:'calc(33.3% - 20px)' , height: 'max-content'}} >
+                <h3 className="font-semibold text-white">{stat.label}</h3>
+                <p className="text-3xl text-blue-800">{addComa(stat.stat)}</p>
+              </div>
+            )
+          })
+        }
       </div>
     </>
   )

@@ -1,8 +1,10 @@
 import { Route, Routes } from "react-router"
-import Login from "@/pages/public/Login/Login"
-import Dashboard from "@/pages/private/Dashboard/Dashboard"
 import PrivateRoute from "@/guards/PrivateRoute"
 import PrivateLayout from "@/layouts/PrivateLayout"
+import { Login } from "@PublicPages";
+import { Dashboard, Calculator } from "@PrivatePages";
+import Cotizacion from "@/pages/private/Calculator/Components/Cotizacion/Cotizacion";
+import GeneralData from "@/pages/private/Calculator/Components/GenralData/GeneralData";
 
 export default function AppRoutes() {
   return (
@@ -11,6 +13,10 @@ export default function AppRoutes() {
       <Route element={<PrivateRoute />}>
         <Route element={<PrivateLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
+          <Route element={<Calculator/>} >
+            <Route path="/calculadora/datosGenerales" element={<GeneralData/>} />
+            <Route path="/calculadora/cotizacion" element={<Cotizacion/>} />
+          </Route>
         </Route>
       </Route>
     </Routes>

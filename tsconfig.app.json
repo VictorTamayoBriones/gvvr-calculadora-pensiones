@@ -25,7 +25,9 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@PublicPages": ["./src/pages/public/index.ts"],
+      "@PrivatePages": ["./src/pages/private/index.ts"]
     }
   },
   "include": ["src"]
