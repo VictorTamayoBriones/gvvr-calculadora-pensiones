@@ -12,6 +12,7 @@ import {
   FieldDescription,
 } from "@/components/ui/field"
 import { addComa } from "@/helpers/formatText"
+import { useCalculator } from "@/contexts/CalculatorContext"
 
 // ---------------------------------------------------------------------------
 // Validation helpers
@@ -56,17 +57,9 @@ const FACTOR_PENSION   = 12_000   // F44 – placeholder
 // Component
 // ---------------------------------------------------------------------------
 export default function GeneralData() {
-  // --- form state ----------------------------------------------------------
-  const [form, setForm] = useState({
-    nombreAsesor: "",
-    nombreCliente: "",
-    nss: "",
-    curp: "",
-    semanasCotizadas: "",
-    fechaBaja: "",
-    saldoAfore: "",
-    fechaInicioContrato: "",
-  })
+  // --- form state from context ---------------------------------------------
+  const { generalData, setGeneralData } = useCalculator()
+  const form = generalData
 
   const [errors, setErrors] = useState<Record<FormFields, string>>({
     nombreAsesor: "",
@@ -93,7 +86,7 @@ export default function GeneralData() {
   // --- handlers ------------------------------------------------------------
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target as { name: FormFields; value: string }
-    setForm((prev) => ({ ...prev, [name]: value }))
+    setGeneralData({ ...form, [name]: value })
     if (touched[name]) {
       setErrors((prev) => ({ ...prev, [name]: VALIDATORS[name](value) }))
     }

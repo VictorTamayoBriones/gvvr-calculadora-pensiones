@@ -9,6 +9,7 @@ import GeneralData from "@/pages/private/Calculator/Components/GenralData/Genera
 export default function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<Login/>} />
       <Route path="/login" element={<Login />} />
       <Route element={<PrivateRoute />}>
         <Route element={<PrivateLayout />}>
