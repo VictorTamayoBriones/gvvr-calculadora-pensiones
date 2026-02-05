@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, type ChangeEvent, type FormEvent } from "react"
+import { useState, useMemo, useCallback, useEffect, type ChangeEvent, type FormEvent } from "react"
 import { useNavigate } from "react-router"
 import { useCalculator } from "@/contexts/CalculatorContext"
 import { getAgeInMonthsFromCURP } from "@/helpers/extractBirthdateFromCURP"
@@ -75,39 +75,67 @@ export function useGeneralData() {
   const resultados = useMemo(() => {
     const saldo = Number(generalData.saldoAfore) || 0
 
-    const prestamo =
+    // Calcular préstamo sugerido: Solo si el saldo es insuficiente
+    const prestamoSugerido =
       saldo < VALOR_REFERENCIA
-        ? FACTOR_PENSION * FACTOR_PRESTAMO_MULTIPLICADOR - PRESTAMO_DESCUENTO
+        ? Math.max(0, FACTOR_PENSION * FACTOR_PRESTAMO_MULTIPLICADOR - PRESTAMO_DESCUENTO)
         : 0
 
-    const total = saldo + prestamo
+    // Total disponible con préstamo sugerido
+    const totalDisponible = saldo + prestamoSugerido
+
+    // Determinar si es suficiente
+    const esSuficiente = totalDisponible >= VALOR_REFERENCIA
+
+    // Calcular faltante o sobrante
+    const diferencia = totalDisponible - VALOR_REFERENCIA
+    const faltante = diferencia < 0 ? Math.abs(diferencia) : 0
+    const sobrante = diferencia > 0 ? diferencia : 0
+
+    // Determinar tipo de financiamiento basado en el préstamo sugerido
     const tipoFinanciamiento =
-      total < VALOR_REFERENCIA
+      totalDisponible < VALOR_REFERENCIA
         ? TIPO_FINANCIAMIENTO.FINANCIADO_1
         : TIPO_FINANCIAMIENTO.FINANCIADO_100
 
-    const necesitaPrestamo =
-      saldo < VALOR_REFERENCIA && tipoFinanciamiento === TIPO_FINANCIAMIENTO.FINANCIADO_1
+    // Determinar si necesita préstamo
+    const necesitaPrestamo = prestamoSugerido > 0
+
+    // Generar etiqueta si aplica (solo para REACTIVA FINANCIADO 100)
+    const etiquetaPrestamo =
+      saldo < VALOR_REFERENCIA && generalData.modalidad === "REACTIVA FINANCIADO 100"
+        ? "NECESITA PRESTAMO FINANCIERO: "
+        : ""
 
     return {
-      prestamo,
+      saldoAfore: saldo,
+      prestamoSugerido,
+      totalDisponible,
+      montoMinimo: VALOR_REFERENCIA,
+      esSuficiente,
+      faltante,
+      sobrante,
       tipoFinanciamiento,
       necesitaPrestamo,
+      etiquetaPrestamo,
       mensaje: MENSAJES_FINANCIAMIENTO[tipoFinanciamiento] ?? "",
     }
-  }, [generalData.saldoAfore])
+  }, [generalData.saldoAfore, generalData.modalidad])
 
   // --- modalidad calculation (age-based restrictions) ---------------------
   const modalidadesDisponibles = useMemo(() => {
     const curp = generalData.curp.trim()
+    const saldo = Number(generalData.saldoAfore) || 0
 
-    // Si no hay CURP válido, devolver modalidad por defecto
+    // Si no hay CURP válido, mostrar estado inicial
     if (!curp || curp.length !== 18) {
       return {
-        opciones: ["FINANCIADO 100" as Modalidad],
-        modalidadSugerida: "FINANCIADO 100" as Modalidad,
+        opciones: [] as Modalidad[],
+        modalidadSugerida: null,
         mensajeEdad: "",
         tieneRestriccion: false,
+        requiereDatos: true,
+        mensajeRequerimiento: "Complete el CURP para calcular las modalidades disponibles",
       }
     }
 
@@ -115,14 +143,16 @@ export function useGeneralData() {
 
     if (!edadMeses) {
       return {
-        opciones: ["FINANCIADO 100" as Modalidad],
-        modalidadSugerida: "FINANCIADO 100" as Modalidad,
-        mensajeEdad: "",
+        opciones: [] as Modalidad[],
+        modalidadSugerida: null,
+        mensajeEdad: "CURP inválido - No se pudo extraer la fecha de nacimiento",
         tieneRestriccion: false,
+        requiereDatos: true,
+        esError: true,
       }
     }
 
-    // Validar edad mínima
+    // Validar edad mínima (< 58.5 años)
     if (edadMeses < EDAD_MINIMA_MESES) {
       return {
         opciones: [] as Modalidad[],
@@ -133,37 +163,86 @@ export function useGeneralData() {
       }
     }
 
-    const saldo = Number(generalData.saldoAfore) || 0
-    const prestamo =
-      saldo < VALOR_REFERENCIA
-        ? FACTOR_PENSION * FACTOR_PRESTAMO_MULTIPLICADOR - PRESTAMO_DESCUENTO
-        : 0
-    const totalDisponible = saldo + prestamo
-
-    // Cliente mayor de 68 años: Solo REACTIVA
-    if (edadMeses > EDAD_MAXIMA_REACTIVA_F100) {
+    // Validar que haya saldo AFORE ingresado
+    if (saldo === 0) {
       return {
-        opciones: ["REACTIVA FINANCIADO 100" as Modalidad, "REACTIVA TRADICIONAL" as Modalidad],
-        modalidadSugerida: "REACTIVA FINANCIADO 100" as Modalidad,
-        mensajeEdad: "SOLO APLICA PARA REACTIVA TRADICIONAL, Para Reactiva financiado 100 solo son viables menores de 68 años",
-        tieneRestriccion: true,
-        esRechazo: false,
+        opciones: [] as Modalidad[],
+        modalidadSugerida: null,
+        mensajeEdad: "",
+        tieneRestriccion: false,
+        requiereDatos: true,
+        mensajeRequerimiento: "Ingrese el Saldo AFORE para calcular las modalidades disponibles",
       }
     }
 
-    // Cliente entre 58.5 y 68 años: FINANCIADO 1 o FINANCIADO 100
-    const modalidadSugerida = totalDisponible < VALOR_REFERENCIA
-      ? "FINANCIADO 1" as Modalidad
-      : "FINANCIADO 100" as Modalidad
+    // Calcular préstamo y total disponible
+    const prestamo =
+      saldo < VALOR_REFERENCIA
+        ? Math.max(0, FACTOR_PENSION * FACTOR_PRESTAMO_MULTIPLICADOR - PRESTAMO_DESCUENTO)
+        : 0
+    const totalDisponible = saldo + prestamo
 
-    return {
-      opciones: [modalidadSugerida],
-      modalidadSugerida,
-      mensajeEdad: "",
-      tieneRestriccion: false,
-      esRechazo: false,
+    // Cliente mayor de 68 años: Solo REACTIVA TRADICIONAL
+    if (edadMeses > EDAD_MAXIMA_REACTIVA_F100) {
+      const edadAnios = Math.floor(edadMeses / 12)
+      return {
+        opciones: ["REACTIVA TRADICIONAL" as Modalidad],
+        modalidadSugerida: "REACTIVA TRADICIONAL" as Modalidad,
+        mensajeEdad: `Edad: ${edadAnios} años - SOLO APLICA PARA REACTIVA TRADICIONAL. Para Reactiva Financiado 100 solo son viables menores de 68 años.`,
+        tieneRestriccion: true,
+        esRechazo: false,
+        descripcionOpciones: {
+          "REACTIVA TRADICIONAL": `Única opción disponible - Edad: ${edadAnios} años (>68 años)`,
+        },
+      }
+    }
+
+    // Cliente entre 58.5 y 68 años: Determinar según capacidad financiera
+    const esSuficiente = totalDisponible >= VALOR_REFERENCIA
+
+    if (esSuficiente) {
+      // Tiene fondos suficientes: FINANCIADO 100
+      return {
+        opciones: ["FINANCIADO 100" as Modalidad],
+        modalidadSugerida: "FINANCIADO 100" as Modalidad,
+        mensajeEdad: "",
+        tieneRestriccion: false,
+        esRechazo: false,
+        descripcionOpciones: {
+          "FINANCIADO 100": `✅ Suficiente - Total disponible: $${totalDisponible.toLocaleString('es-MX')}`,
+        },
+      }
+    } else {
+      // Fondos insuficientes: FINANCIADO 1
+      const faltante = VALOR_REFERENCIA - totalDisponible
+      return {
+        opciones: ["FINANCIADO 1" as Modalidad],
+        modalidadSugerida: "FINANCIADO 1" as Modalidad,
+        mensajeEdad: "",
+        tieneRestriccion: false,
+        esRechazo: false,
+        esInsuficiente: true,
+        descripcionOpciones: {
+          "FINANCIADO 1": `⚠️ Insuficiente - Falta: $${faltante.toLocaleString('es-MX')}`,
+        },
+      }
     }
   }, [generalData.curp, generalData.saldoAfore])
+
+  // --- auto-update modalidad when options change -------------------------
+  useEffect(() => {
+    // Solo actualizar si hay una modalidad sugerida
+    if (!modalidadesDisponibles.modalidadSugerida) return
+
+    // Verificar si la modalidad actual es válida en las opciones disponibles
+    const esModalidadValida = modalidadesDisponibles.opciones.includes(generalData.modalidad)
+
+    // Si la modalidad actual no es válida, actualizar a la sugerida
+    if (!esModalidadValida && modalidadesDisponibles.modalidadSugerida !== generalData.modalidad) {
+      setGeneralData({ ...generalData, modalidad: modalidadesDisponibles.modalidadSugerida })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modalidadesDisponibles.modalidadSugerida, modalidadesDisponibles.opciones.length])
 
   // --- modalidad change handler -------------------------------------------
   const handleModalidadChange = useCallback((value: string) => {
