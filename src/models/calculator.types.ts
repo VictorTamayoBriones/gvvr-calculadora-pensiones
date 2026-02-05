@@ -1,6 +1,12 @@
 // ---------------------------------------------------------------------------
 // Form Data Types
 // ---------------------------------------------------------------------------
+export type Modalidad =
+  | "FINANCIADO 1"
+  | "FINANCIADO 100"
+  | "REACTIVA TRADICIONAL"
+  | "REACTIVA FINANCIADO 100"
+
 export interface GeneralDataForm {
   nombreAsesor: string
   nombreCliente: string
@@ -10,6 +16,7 @@ export interface GeneralDataForm {
   fechaBaja: string
   saldoAfore: string
   fechaInicioContrato: string
+  modalidad: Modalidad
 }
 
 // ---------------------------------------------------------------------------

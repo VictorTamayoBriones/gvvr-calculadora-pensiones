@@ -1,0 +1,1 @@
+export const COSTO_GESTORIA = 18000;

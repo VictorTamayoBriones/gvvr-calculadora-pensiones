@@ -1,5 +1,3 @@
-import { useState, useMemo, type ChangeEvent, type FormEvent } from "react"
-
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -9,144 +7,24 @@ import {
   Field,
   FieldLabel,
   FieldError,
-  FieldDescription,
 } from "@/components/ui/field"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { HelpCircle, AlertCircle } from "lucide-react"
 import { addComa } from "@/helpers/formatText"
-import { useCalculator } from "@/contexts/CalculatorContext"
-
-// ---------------------------------------------------------------------------
-// Validation helpers
-// ---------------------------------------------------------------------------
-const VALIDATORS = {
-  nombreAsesor: (v: string) => (v.trim() === "" ? "Este campo es obligatorio." : ""),
-  nombreCliente: (v: string) => (v.trim() === "" ? "Este campo es obligatorio." : ""),
-  nss: (v: string) => {
-    if (v.trim() === "") return "Este campo es obligatorio."
-    if (!/^\d{11}$/.test(v)) return "El NSS debe tener exactamente 11 dígitos."
-    return ""
-  },
-  curp: (v: string) => {
-    if (v.trim() === "") return "Este campo es obligatorio."
-    if (!/^[A-Za-z0-9]{18}$/.test(v)) return "El CURP debe tener exactamente 18 caracteres alfanuméricos."
-    return ""
-  },
-  semanasCotizadas: (v: string) => {
-    if (v.trim() === "") return "Este campo es obligatorio."
-    const n = Number(v)
-    if (isNaN(n) || n <= 0) return "Debe ser un número mayor a 0."
-    return ""
-  },
-  fechaBaja: (v: string) => (v === "" ? "Este campo es obligatorio." : ""),
-  saldoAfore: (v: string) => {
-    if (v.trim() === "") return "Este campo es obligatorio."
-    if (isNaN(Number(v)) || Number(v) < 0) return "Debe ser un valor monetario ≥ 0."
-    return ""
-  },
-  fechaInicioContrato: (v: string) => (v === "" ? "Este campo es obligatorio." : ""),
-} as const
-
-type FormFields = keyof typeof VALIDATORS
-
-// ---------------------------------------------------------------------------
-// Business-logic constants (would come from other sheets in production)
-// ---------------------------------------------------------------------------
-const VALOR_REFERENCIA = 80_000   // K25 – placeholder
-const FACTOR_PENSION   = 12_000   // F44 – placeholder
+import { useGeneralData } from "./useGeneralData"
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 export default function GeneralData() {
-  // --- form state from context ---------------------------------------------
-  const { generalData, setGeneralData } = useCalculator()
-  const form = generalData
-
-  const [errors, setErrors] = useState<Record<FormFields, string>>({
-    nombreAsesor: "",
-    nombreCliente: "",
-    nss: "",
-    curp: "",
-    semanasCotizadas: "",
-    fechaBaja: "",
-    saldoAfore: "",
-    fechaInicioContrato: "",
-  })
-
-  const [touched, setTouched] = useState<Record<FormFields, boolean>>({
-    nombreAsesor: false,
-    nombreCliente: false,
-    nss: false,
-    curp: false,
-    semanasCotizadas: false,
-    fechaBaja: false,
-    saldoAfore: false,
-    fechaInicioContrato: false,
-  })
-
-  // --- handlers ------------------------------------------------------------
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target as { name: FormFields; value: string }
-    setGeneralData({ ...form, [name]: value })
-    if (touched[name]) {
-      setErrors((prev) => ({ ...prev, [name]: VALIDATORS[name](value) }))
-    }
-  }
-
-  const handleBlur = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target as { name: FormFields; value: string }
-    setTouched((prev) => ({ ...prev, [name]: true }))
-    setErrors((prev) => ({ ...prev, [name]: VALIDATORS[name](value) }))
-  }
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const newErrors = {} as Record<FormFields, string>
-    let hasError = false
-    for (const key of Object.keys(VALIDATORS) as FormFields[]) {
-      const msg = VALIDATORS[key](form[key])
-      newErrors[key] = msg
-      if (msg) hasError = true
-    }
-    setErrors(newErrors)
-    setTouched(
-      Object.fromEntries(Object.keys(VALIDATORS).map((k) => [k, true])) as Record<FormFields, boolean>
-    )
-    if (hasError) return
-    // TODO: emit / navigate on valid submit
-  }
-
-  // --- derived calculations (business logic from the doc) -----------------
-  const resultados = useMemo(() => {
-    const saldo = Number(form.saldoAfore) || 0
-
-    const prestamo =
-      saldo < VALOR_REFERENCIA ? FACTOR_PENSION * 7.5 - 10_000 : 0
-
-    const total = saldo + prestamo
-    const tipoFinanciamiento =
-      total < VALOR_REFERENCIA ? "FINANCIADO 1" : "FINANCIADO 100"
-
-    const necesitaPrestamo =
-      saldo < VALOR_REFERENCIA && tipoFinanciamiento === "FINANCIADO 1"
-
-    const mensajes: Record<string, string> = {
-      "REACTIVA TRADICIONAL":
-        "El cliente está obligado a pagar su inscripción y meses de contratación, solo GRUPO AVIVIR financiará la GESTIÓN.",
-      "REACTIVA FINANCIADO 100":
-        "GRUPO AVIVIR financiará el 100% de la inscripción, pagos mensuales y la gestión.",
-      "FINANCIADO 100":
-        "El cliente tiene capacidad financiera para cubrir los costos.",
-      "FINANCIADO 1":
-        "El cliente requiere financiamiento adicional.",
-    }
-
-    return {
-      prestamo,
-      tipoFinanciamiento,
-      necesitaPrestamo,
-      mensaje: mensajes[tipoFinanciamiento] ?? "",
-    }
-  }, [form.saldoAfore])
+  const { form, errors, touched, resultados, modalidadesDisponibles, handleChange, handleBlur, handleSubmit, handleModalidadChange } = useGeneralData()
 
   // --- render --------------------------------------------------------------
   return (
@@ -210,7 +88,6 @@ export default function GeneralData() {
                   onBlur={handleBlur}
                   aria-invalid={!!(touched.nss && errors.nss)}
                 />
-                <FieldDescription>Número de Seguridad Social (11 dígitos)</FieldDescription>
                 {touched.nss && errors.nss && (
                   <FieldError>{errors.nss}</FieldError>
                 )}
@@ -229,7 +106,6 @@ export default function GeneralData() {
                   onBlur={handleBlur}
                   aria-invalid={!!(touched.curp && errors.curp)}
                 />
-                <FieldDescription>Clave Única de Registro de Población (18 caracteres)</FieldDescription>
                 {touched.curp && errors.curp && (
                   <FieldError>{errors.curp}</FieldError>
                 )}
@@ -239,7 +115,21 @@ export default function GeneralData() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Semanas Cotizadas */}
               <Field data-invalid={touched.semanasCotizadas && errors.semanasCotizadas ? "true" : undefined}>
-                <FieldLabel htmlFor="semanasCotizadas">Semanas Cotizadas</FieldLabel>
+                <div className="flex items-center gap-1.5">
+                  <FieldLabel htmlFor="semanasCotizadas">Semanas Cotizadas</FieldLabel>
+                  <Tooltip>
+                    <TooltipTrigger type="button" className="text-muted-foreground hover:text-foreground transition-colors">
+                      <HelpCircle className="h-4 w-4" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      <p className="font-medium mb-1">Total de semanas cotizadas en IMSS</p>
+                      <ul className="text-xs space-y-1 list-disc list-inside">
+                        <li>Se necesita un mínimo de 430 semanas.</li>
+                        <li>430 semanas equivalen aproximadamente a 8.3 años de cotización</li>
+                      </ul>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Input
                   id="semanasCotizadas"
                   name="semanasCotizadas"
@@ -250,7 +140,6 @@ export default function GeneralData() {
                   onBlur={handleBlur}
                   aria-invalid={!!(touched.semanasCotizadas && errors.semanasCotizadas)}
                 />
-                <FieldDescription>Total de semanas cotizadas en IMSS</FieldDescription>
                 {touched.semanasCotizadas && errors.semanasCotizadas && (
                   <FieldError>{errors.semanasCotizadas}</FieldError>
                 )}
@@ -258,7 +147,17 @@ export default function GeneralData() {
 
               {/* Fecha de Baja */}
               <Field data-invalid={touched.fechaBaja && errors.fechaBaja ? "true" : undefined}>
+                <div className="flex items-center gap-1.5">
                 <FieldLabel htmlFor="fechaBaja">Fecha de Baja</FieldLabel>
+                  <Tooltip>
+                    <TooltipTrigger type="button" className="text-muted-foreground hover:text-foreground transition-colors">
+                      <HelpCircle className="h-4 w-4" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      <p className="font-medium mb-1">Fecha en que el trabajador causó baja del IMSS</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <Input
                   id="fechaBaja"
                   name="fechaBaja"
@@ -268,7 +167,6 @@ export default function GeneralData() {
                   onBlur={handleBlur}
                   aria-invalid={!!(touched.fechaBaja && errors.fechaBaja)}
                 />
-                <FieldDescription>Última fecha de baja laboral</FieldDescription>
                 {touched.fechaBaja && errors.fechaBaja && (
                   <FieldError>{errors.fechaBaja}</FieldError>
                 )}
@@ -293,7 +191,6 @@ export default function GeneralData() {
                     aria-invalid={!!(touched.saldoAfore && errors.saldoAfore)}
                   />
                 </div>
-                <FieldDescription>Saldo disponible en AFORE</FieldDescription>
                 {touched.saldoAfore && errors.saldoAfore && (
                   <FieldError>{errors.saldoAfore}</FieldError>
                 )}
@@ -311,13 +208,85 @@ export default function GeneralData() {
                   onBlur={handleBlur}
                   aria-invalid={!!(touched.fechaInicioContrato && errors.fechaInicioContrato)}
                 />
-                <FieldDescription>Inicio del contrato de servicios</FieldDescription>
                 {touched.fechaInicioContrato && errors.fechaInicioContrato && (
                   <FieldError>{errors.fechaInicioContrato}</FieldError>
                 )}
               </Field>
             </div>
           </FieldGroup>
+        </CardContent>
+      </Card>
+
+      {/* --- Modalidad de Financiamiento ----------------------------------- */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Modalidad de Financiamiento</CardTitle>
+        </CardHeader>
+
+        <CardContent>
+          {/* Mensaje de edad si aplica */}
+          {modalidadesDisponibles.mensajeEdad && (
+            <div className={`rounded-lg border p-4 mb-4 flex items-start gap-3 ${
+              modalidadesDisponibles.esRechazo
+                ? "bg-destructive/10 border-destructive text-destructive"
+                : "bg-amber-50 dark:bg-amber-950/30 border-amber-500 dark:border-amber-500/50 text-amber-900 dark:text-amber-200"
+            }`}>
+              <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />
+              <p className="text-sm font-medium">{modalidadesDisponibles.mensajeEdad}</p>
+            </div>
+          )}
+
+          {/* Selector de modalidad */}
+          {modalidadesDisponibles.opciones.length > 0 ? (
+            <FieldGroup>
+              <Field>
+                <div className="flex items-center gap-1.5">
+                  <FieldLabel htmlFor="modalidad">Modalidad</FieldLabel>
+                  <Tooltip>
+                    <TooltipTrigger type="button" className="text-muted-foreground hover:text-foreground transition-colors">
+                      <HelpCircle className="h-4 w-4" />
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-xs">
+                      <p className="font-medium mb-1">Tipo de financiamiento disponible</p>
+                      <ul className="text-xs space-y-1 list-disc list-inside">
+                        <li>Las opciones varían según edad y capacidad financiera</li>
+                        <li>La modalidad sugerida se muestra primero</li>
+                      </ul>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Select value={form.modalidad} onValueChange={handleModalidadChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecciona una modalidad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {modalidadesDisponibles.opciones.map((modalidad) => (
+                      <SelectItem key={modalidad} value={modalidad}>
+                        {modalidad}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              {/* Descripción de modalidad seleccionada */}
+              {form.modalidad && (
+                <div className="rounded-lg border bg-muted/50 p-4 mt-2">
+                  <p className="text-xs text-muted-foreground mb-1">Descripción</p>
+                  <p className="text-sm">
+                    {form.modalidad === "FINANCIADO 1" && "Financiamiento parcial - El cliente necesita aportar fondos adicionales."}
+                    {form.modalidad === "FINANCIADO 100" && "Financiamiento total - Grupo a vivir cubre el 100% (inscripción + mensualidades + gestoría)."}
+                    {form.modalidad === "REACTIVA TRADICIONAL" && "El cliente esta obligado a pagar su inscripcion y meses de contratacion, solo GRUPO A VIVIR financiara la GESTION."}
+                    {form.modalidad === "REACTIVA FINANCIADO 100" && "GRUPO A VIVIR financiara el 100% de la inscripcion, pagos mensuales y la gestion."}
+                  </p>
+                </div>
+              )}
+            </FieldGroup>
+          ) : (
+            <div className="text-center p-8 text-muted-foreground">
+              <p className="text-sm">Complete el CURP o ingresa uno valido para calcular las modalidades disponibles</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

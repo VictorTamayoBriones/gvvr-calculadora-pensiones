@@ -34,6 +34,7 @@ const initialGeneralData: GeneralDataForm = {
   fechaBaja: "",
   saldoAfore: "",
   fechaInicioContrato: "",
+  modalidad: "FINANCIADO 100",
 }
 
 // ---------------------------------------------------------------------------
