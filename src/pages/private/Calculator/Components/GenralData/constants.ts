@@ -10,12 +10,15 @@ export const FACTOR_PENSION   = 12_000   // F44 – placeholder
 // ---------------------------------------------------------------------------
 export const MINIMO_SEMANAS_COTIZADAS = 430  // Minimum weeks required for eligibility
 export const MINIMO_SALDO_AFORE = 15_000     // Minimum AFORE balance in MXN
+export const CURP_LENGTH = 18                // Standard CURP length
+export const SALDO_MINIMO_PARA_CALCULO = 0   // Minimum balance to trigger calculations
 
 // ---------------------------------------------------------------------------
 // Age validation constants
 // ---------------------------------------------------------------------------
 export const EDAD_MINIMA_MESES = 702          // 58.5 years minimum age
 export const EDAD_MAXIMA_REACTIVA_F100 = 816  // 68 years maximum for REACTIVA FINANCIADO 100
+export const MESES_POR_ANIO = 12              // Conversion factor for months to years
 
 // ---------------------------------------------------------------------------
 // Calculation constants
@@ -34,6 +37,44 @@ export const TIPO_FINANCIAMIENTO = {
 } as const
 
 export type TipoFinanciamiento = typeof TIPO_FINANCIAMIENTO[keyof typeof TIPO_FINANCIAMIENTO]
+
+// ---------------------------------------------------------------------------
+// Modalidad types (matching calculator.types.ts)
+// ---------------------------------------------------------------------------
+export const MODALIDADES = {
+  FINANCIADO_1: "FINANCIADO 1",
+  FINANCIADO_100: "FINANCIADO 100",
+  REACTIVA_TRADICIONAL: "REACTIVA TRADICIONAL",
+  REACTIVA_FINANCIADO_100: "REACTIVA FINANCIADO 100",
+} as const
+
+export type Modalidad = typeof MODALIDADES[keyof typeof MODALIDADES]
+
+// ---------------------------------------------------------------------------
+// User-facing messages
+// ---------------------------------------------------------------------------
+export const MENSAJES_VALIDACION = {
+  CURP_REQUERIDO: "Complete el CURP para calcular las modalidades disponibles",
+  CURP_INVALIDO: "CURP inválido - No se pudo extraer la fecha de nacimiento",
+  SALDO_REQUERIDO: "Ingrese el Saldo AFORE para calcular las modalidades disponibles",
+  EDAD_MINIMA_RECHAZO: "PROSPECTO NO VALIDO PARA ESTE PRODUCTO, Edad minima de contratacion 58 años 6 meses",
+  NECESITA_PRESTAMO: "NECESITA PRESTAMO FINANCIERO: ",
+} as const
+
+// ---------------------------------------------------------------------------
+// Dynamic message templates
+// ---------------------------------------------------------------------------
+export const crearMensajeEdadMaxima = (edadAnios: number): string =>
+  `Edad: ${edadAnios} años - SOLO APLICA PARA REACTIVA TRADICIONAL. Para Reactiva Financiado 100 solo son viables menores de 68 años.`
+
+export const crearDescripcionReactivaTradicional = (edadAnios: number): string =>
+  `Única opción disponible - Edad: ${edadAnios} años (>68 años)`
+
+export const crearDescripcionFinanciado100 = (totalDisponible: number): string =>
+  `✅ Suficiente - Total disponible: $${totalDisponible.toLocaleString('es-MX')}`
+
+export const crearDescripcionFinanciado1 = (faltante: number): string =>
+  `⚠️ Insuficiente - Falta: $${faltante.toLocaleString('es-MX')}`
 
 // ---------------------------------------------------------------------------
 // Result messages

@@ -19,7 +19,7 @@ import {
 import { HelpCircle, AlertCircle } from "lucide-react"
 import { addComa } from "@/helpers/formatText"
 import { useGeneralData } from "./useGeneralData"
-import { FACTOR_PENSION } from "./constants"
+import { FACTOR_PENSION, FACTOR_PRESTAMO_MULTIPLICADOR, PRESTAMO_DESCUENTO } from "./constants"
 
 // ---------------------------------------------------------------------------
 // Component
@@ -317,8 +317,8 @@ export default function GeneralData() {
                   <p className="text-sm">
                     {form.modalidad === "FINANCIADO 1" && "Financiamiento parcial - El cliente necesita aportar fondos adicionales."}
                     {form.modalidad === "FINANCIADO 100" && "Financiamiento total - Grupo Avivir cubre el 100% (inscripción + mensualidades + gestoría)."}
-                    {form.modalidad === "REACTIVA TRADICIONAL" && "El cliente esta obligado a pagar su inscripcion y meses de contratacion, solo GRUPO AVIVIR financiara la GESTION."}
-                    {form.modalidad === "REACTIVA FINANCIADO 100" && "GRUPO AVIVIR financiara el 100% de la inscripcion, pagos mensuales y la gestion."}
+                    {form.modalidad === "REACTIVA TRADICIONAL" && "El cliente esta obligado a pagar su inscripcion y meses de contratacion, solo GRUPO A VIVIR financiara la GESTION."}
+                    {form.modalidad === "REACTIVA FINANCIADO 100" && "GRUPO A VIVIR financiara el 100% de la inscripcion, pagos mensuales y la gestion."}
                   </p>
                 </div>
               )}
@@ -413,7 +413,7 @@ export default function GeneralData() {
               : "bg-destructive/10 text-destructive border border-destructive/30"
           }`}>
             <span className="text-lg">{resultados.esSuficiente ? "✅" : "⚠️"}</span>
-            <span>Modalidad: {resultados.tipoFinanciamiento}</span>
+            <span>Tipo de Financiamiento: {resultados.tipoFinanciamiento}</span>
           </div>
 
           {/* Mensaje descriptivo */}
@@ -451,10 +451,10 @@ export default function GeneralData() {
                 <div className="mt-3 p-4 bg-muted/50 rounded-lg border space-y-2">
                   <p className="font-medium">Fórmula:</p>
                   <code className="block bg-background p-2 rounded text-xs font-mono">
-                    (Pensión Mensual × 7.5) - $10,000
+                    (Pensión Mensual × {FACTOR_PRESTAMO_MULTIPLICADOR}) - ${addComa(String(PRESTAMO_DESCUENTO))}
                   </code>
                   <p className="text-muted-foreground">
-                    Cálculo: (${addComa(String(FACTOR_PENSION))} × 7.5) - $10,000 = ${addComa(String(resultados.prestamoSugerido))}
+                    Cálculo: (${addComa(String(FACTOR_PENSION))} × {FACTOR_PRESTAMO_MULTIPLICADOR}) - ${addComa(String(PRESTAMO_DESCUENTO))} = ${addComa(String(resultados.prestamoSugerido))}
                   </p>
                   <p className="text-xs text-muted-foreground italic mt-2">
                     * Este es un monto sugerido. El préstamo final puede variar según aprobación de Grupo Avivir.

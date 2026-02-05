@@ -13,6 +13,7 @@ export type FormFields =
   | "fechaBaja"
   | "saldoAfore"
   | "fechaInicioContrato"
+  | "modalidad"
 
 export type FormErrors = Record<FormFields, string>
 export type FormTouched = Record<FormFields, boolean>
@@ -55,6 +56,7 @@ export const VALIDATORS: Record<FormFields, (v: string) => string> = {
     return ""
   },
   fechaInicioContrato: (v: string) => (v === "" ? "Este campo es obligatorio." : ""),
+  modalidad: (v: string) => (v.trim() === "" ? "Debe seleccionar una modalidad." : ""),
 }
 
 // ---------------------------------------------------------------------------
@@ -69,6 +71,7 @@ export const createInitialErrors = (): FormErrors => ({
   fechaBaja: "",
   saldoAfore: "",
   fechaInicioContrato: "",
+  modalidad: "",
 })
 
 export const createInitialTouched = (): FormTouched => ({
@@ -80,4 +83,5 @@ export const createInitialTouched = (): FormTouched => ({
   fechaBaja: false,
   saldoAfore: false,
   fechaInicioContrato: false,
+  modalidad: false,
 })

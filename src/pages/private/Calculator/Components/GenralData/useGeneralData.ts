@@ -21,7 +21,34 @@ import {
   ROUTES,
   EDAD_MINIMA_MESES,
   EDAD_MAXIMA_REACTIVA_F100,
+  CURP_LENGTH,
+  SALDO_MINIMO_PARA_CALCULO,
+  MESES_POR_ANIO,
+  MODALIDADES,
+  MENSAJES_VALIDACION,
+  crearMensajeEdadMaxima,
+  crearDescripcionReactivaTradicional,
+  crearDescripcionFinanciado100,
+  crearDescripcionFinanciado1,
+  type TipoFinanciamiento,
 } from "./constants"
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+interface ResultadosFinancieros {
+  saldoAfore: number
+  prestamoSugerido: number
+  totalDisponible: number
+  montoMinimo: number
+  esSuficiente: boolean
+  faltante: number
+  sobrante: number
+  tipoFinanciamiento: TipoFinanciamiento
+  necesitaPrestamo: boolean
+  etiquetaPrestamo: string
+  mensaje: string
+}
 
 // ---------------------------------------------------------------------------
 // Hook
@@ -72,7 +99,7 @@ export function useGeneralData() {
   }, [generalData, navigate])
 
   // --- derived calculations (business logic from the doc) -----------------
-  const resultados = useMemo(() => {
+  const resultados = useMemo<ResultadosFinancieros>(() => {
     const saldo = Number(generalData.saldoAfore) || 0
 
     // Calcular préstamo sugerido: Solo si el saldo es insuficiente
@@ -103,8 +130,8 @@ export function useGeneralData() {
 
     // Generar etiqueta si aplica (solo para REACTIVA FINANCIADO 100)
     const etiquetaPrestamo =
-      saldo < VALOR_REFERENCIA && generalData.modalidad === "REACTIVA FINANCIADO 100"
-        ? "NECESITA PRESTAMO FINANCIERO: "
+      saldo < VALOR_REFERENCIA && generalData.modalidad === MODALIDADES.REACTIVA_FINANCIADO_100
+        ? MENSAJES_VALIDACION.NECESITA_PRESTAMO
         : ""
 
     return {
@@ -128,14 +155,14 @@ export function useGeneralData() {
     const saldo = Number(generalData.saldoAfore) || 0
 
     // Si no hay CURP válido, mostrar estado inicial
-    if (!curp || curp.length !== 18) {
+    if (!curp || curp.length !== CURP_LENGTH) {
       return {
         opciones: [] as Modalidad[],
         modalidadSugerida: null,
         mensajeEdad: "",
         tieneRestriccion: false,
         requiereDatos: true,
-        mensajeRequerimiento: "Complete el CURP para calcular las modalidades disponibles",
+        mensajeRequerimiento: MENSAJES_VALIDACION.CURP_REQUERIDO,
       }
     }
 
@@ -145,7 +172,7 @@ export function useGeneralData() {
       return {
         opciones: [] as Modalidad[],
         modalidadSugerida: null,
-        mensajeEdad: "CURP inválido - No se pudo extraer la fecha de nacimiento",
+        mensajeEdad: MENSAJES_VALIDACION.CURP_INVALIDO,
         tieneRestriccion: false,
         requiereDatos: true,
         esError: true,
@@ -157,21 +184,21 @@ export function useGeneralData() {
       return {
         opciones: [] as Modalidad[],
         modalidadSugerida: null,
-        mensajeEdad: "PROSPECTO NO VALIDO PARA ESTE PRODUCTO, Edad minima de contratacion 58 años 6 meses",
+        mensajeEdad: MENSAJES_VALIDACION.EDAD_MINIMA_RECHAZO,
         tieneRestriccion: true,
         esRechazo: true,
       }
     }
 
     // Validar que haya saldo AFORE ingresado
-    if (saldo === 0) {
+    if (saldo === SALDO_MINIMO_PARA_CALCULO) {
       return {
         opciones: [] as Modalidad[],
         modalidadSugerida: null,
         mensajeEdad: "",
         tieneRestriccion: false,
         requiereDatos: true,
-        mensajeRequerimiento: "Ingrese el Saldo AFORE para calcular las modalidades disponibles",
+        mensajeRequerimiento: MENSAJES_VALIDACION.SALDO_REQUERIDO,
       }
     }
 
@@ -184,15 +211,15 @@ export function useGeneralData() {
 
     // Cliente mayor de 68 años: Solo REACTIVA TRADICIONAL
     if (edadMeses > EDAD_MAXIMA_REACTIVA_F100) {
-      const edadAnios = Math.floor(edadMeses / 12)
+      const edadAnios = Math.floor(edadMeses / MESES_POR_ANIO)
       return {
-        opciones: ["REACTIVA TRADICIONAL" as Modalidad],
-        modalidadSugerida: "REACTIVA TRADICIONAL" as Modalidad,
-        mensajeEdad: `Edad: ${edadAnios} años - SOLO APLICA PARA REACTIVA TRADICIONAL. Para Reactiva Financiado 100 solo son viables menores de 68 años.`,
+        opciones: [MODALIDADES.REACTIVA_TRADICIONAL as Modalidad],
+        modalidadSugerida: MODALIDADES.REACTIVA_TRADICIONAL as Modalidad,
+        mensajeEdad: crearMensajeEdadMaxima(edadAnios),
         tieneRestriccion: true,
         esRechazo: false,
         descripcionOpciones: {
-          "REACTIVA TRADICIONAL": `Única opción disponible - Edad: ${edadAnios} años (>68 años)`,
+          [MODALIDADES.REACTIVA_TRADICIONAL]: crearDescripcionReactivaTradicional(edadAnios),
         },
       }
     }
@@ -203,27 +230,27 @@ export function useGeneralData() {
     if (esSuficiente) {
       // Tiene fondos suficientes: FINANCIADO 100
       return {
-        opciones: ["FINANCIADO 100" as Modalidad],
-        modalidadSugerida: "FINANCIADO 100" as Modalidad,
+        opciones: [MODALIDADES.FINANCIADO_100 as Modalidad],
+        modalidadSugerida: MODALIDADES.FINANCIADO_100 as Modalidad,
         mensajeEdad: "",
         tieneRestriccion: false,
         esRechazo: false,
         descripcionOpciones: {
-          "FINANCIADO 100": `✅ Suficiente - Total disponible: $${totalDisponible.toLocaleString('es-MX')}`,
+          [MODALIDADES.FINANCIADO_100]: crearDescripcionFinanciado100(totalDisponible),
         },
       }
     } else {
       // Fondos insuficientes: FINANCIADO 1
       const faltante = VALOR_REFERENCIA - totalDisponible
       return {
-        opciones: ["FINANCIADO 1" as Modalidad],
-        modalidadSugerida: "FINANCIADO 1" as Modalidad,
+        opciones: [MODALIDADES.FINANCIADO_1 as Modalidad],
+        modalidadSugerida: MODALIDADES.FINANCIADO_1 as Modalidad,
         mensajeEdad: "",
         tieneRestriccion: false,
         esRechazo: false,
         esInsuficiente: true,
         descripcionOpciones: {
-          "FINANCIADO 1": `⚠️ Insuficiente - Falta: $${faltante.toLocaleString('es-MX')}`,
+          [MODALIDADES.FINANCIADO_1]: crearDescripcionFinanciado1(faltante),
         },
       }
     }

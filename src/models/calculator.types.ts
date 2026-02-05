@@ -1,11 +1,10 @@
 // ---------------------------------------------------------------------------
 // Form Data Types
 // ---------------------------------------------------------------------------
-export type Modalidad =
-  | "FINANCIADO 1"
-  | "FINANCIADO 100"
-  | "REACTIVA TRADICIONAL"
-  | "REACTIVA FINANCIADO 100"
+// Import Modalidad type from constants to maintain single source of truth
+import type { Modalidad } from "../pages/private/Calculator/Components/GenralData/constants"
+
+export type { Modalidad }
 
 export interface GeneralDataForm {
   nombreAsesor: string
