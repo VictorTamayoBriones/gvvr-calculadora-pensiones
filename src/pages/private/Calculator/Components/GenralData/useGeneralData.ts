@@ -398,6 +398,101 @@ export function useGeneralData() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalidadesDisponibles.modalidadSugerida, modalidadesDisponibles.opciones.length])
 
+  // --- auto-calculate fechaInicioContrato from fechaFirmaContrato -----------------
+  useEffect(() => {
+    const fechaFirma = generalData.fechaFirmaContrato.trim()
+
+    // Si no hay fecha de firma válida, limpiar campo calculado
+    if (!fechaFirma) {
+      if (generalData.fechaInicioContrato) {
+        setGeneralData({ ...generalData, fechaInicioContrato: "" })
+      }
+      return
+    }
+
+    try {
+      const firma = new Date(fechaFirma)
+      const dia = firma.getDate()
+
+      let fechaInicio: Date
+
+      if (dia <= 15) {
+        // Alta retroactiva al 1ro del mes corriente
+        fechaInicio = new Date(firma.getFullYear(), firma.getMonth(), 1)
+      } else {
+        // Alta al 1ro del mes siguiente
+        fechaInicio = new Date(firma.getFullYear(), firma.getMonth() + 1, 1)
+      }
+
+      const fechaInicioISO = fechaInicio.toISOString().split('T')[0]
+
+      // Actualizar solo si el valor ha cambiado
+      if (generalData.fechaInicioContrato !== fechaInicioISO) {
+        setGeneralData({
+          ...generalData,
+          fechaInicioContrato: fechaInicioISO
+        })
+      }
+    } catch {
+      // Fecha inválida, limpiar campo
+      if (generalData.fechaInicioContrato) {
+        setGeneralData({ ...generalData, fechaInicioContrato: "" })
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generalData.fechaFirmaContrato])
+
+  // --- auto-calculate fechaFinContrato and semanasAlFinal from fechaInicioContrato and totalMeses -----------------
+  useEffect(() => {
+    const fechaInicio = generalData.fechaInicioContrato.trim()
+    const totalMeses = Number(generalData.totalMeses) || 0
+
+    // Si faltan datos esenciales, limpiar campos calculados
+    if (!fechaInicio || !totalMeses) {
+      if (generalData.fechaFinContrato || generalData.semanasAlFinal) {
+        setGeneralData({
+          ...generalData,
+          fechaFinContrato: "",
+          semanasAlFinal: ""
+        })
+      }
+      return
+    }
+
+    try {
+      // Calcular fecha de fin: fecha_inicio + total_meses
+      const inicio = new Date(fechaInicio)
+      const fin = new Date(inicio)
+      fin.setMonth(fin.getMonth() + totalMeses)
+      fin.setDate(1) // Asegurar que sea día 1
+      const fechaFinISO = fin.toISOString().split('T')[0]
+
+      // Calcular semanas al final: semanas_iniciales + (total_meses × 4)
+      const semanasIniciales = Number(generalData.semanasCotizadas) || 0
+      const semanasFinales = semanasIniciales + (totalMeses * 4)
+
+      // Actualizar solo si los valores han cambiado
+      if (generalData.fechaFinContrato !== fechaFinISO ||
+          generalData.semanasAlFinal !== String(semanasFinales)) {
+        setGeneralData({
+          ...generalData,
+          fechaFinContrato: fechaFinISO,
+          semanasAlFinal: String(semanasFinales)
+        })
+      }
+    } catch {
+      // Error en cálculo, limpiar campos
+      if (generalData.fechaFinContrato || generalData.semanasAlFinal) {
+        setGeneralData({
+          ...generalData,
+          fechaFinContrato: "",
+          semanasAlFinal: ""
+        })
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generalData.fechaInicioContrato, generalData.totalMeses, generalData.semanasCotizadas])
+
   // --- modalidad change handler -------------------------------------------
   const handleModalidadChange = useCallback((value: string) => {
     const nuevaModalidad = value as Modalidad

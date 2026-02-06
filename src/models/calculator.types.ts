@@ -20,6 +20,12 @@ export interface GeneralDataForm {
   edad: string
   leyAplicable: "LEY_73" | "LEY_97" | ""
   sinVigenciaDerechos: string
+  fechaFirmaContrato: string
+  fechaFinContrato: string
+  totalMeses: string
+  semanasAlFinal: string
+  prestamoFinanciero: string
+  montoTotalInvertir: string
 }
 
 // ---------------------------------------------------------------------------

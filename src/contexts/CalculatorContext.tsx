@@ -39,6 +39,12 @@ const initialGeneralData: GeneralDataForm = {
   edad: "",
   leyAplicable: "",
   sinVigenciaDerechos: "",
+  fechaFirmaContrato: "",
+  fechaFinContrato: "",
+  totalMeses: "",
+  semanasAlFinal: "",
+  prestamoFinanciero: "",
+  montoTotalInvertir: "",
 }
 
 // ---------------------------------------------------------------------------
