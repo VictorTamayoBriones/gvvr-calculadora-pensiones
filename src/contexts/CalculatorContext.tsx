@@ -35,6 +35,10 @@ const initialGeneralData: GeneralDataForm = {
   saldoAfore: "",
   fechaInicioContrato: "",
   modalidad: "FINANCIADO 100",
+  fechaNacimiento: "",
+  edad: "",
+  leyAplicable: "",
+  sinVigenciaDerechos: "",
 }
 
 // ---------------------------------------------------------------------------

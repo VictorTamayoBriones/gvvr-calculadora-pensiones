@@ -16,6 +16,10 @@ export interface GeneralDataForm {
   saldoAfore: string
   fechaInicioContrato: string
   modalidad: Modalidad
+  fechaNacimiento: string
+  edad: string
+  leyAplicable: "LEY_73" | "LEY_97" | ""
+  sinVigenciaDerechos: string
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, type ChangeEvent, type FormEvent } from "react"
 import { useNavigate } from "react-router"
 import { useCalculator } from "@/contexts/CalculatorContext"
-import { getAgeInMonthsFromCURP } from "@/helpers/extractBirthdateFromCURP"
+import { getAgeInMonthsFromCURP, extractBirthdateFromCURP } from "@/helpers/extractBirthdateFromCURP"
 import type { Modalidad } from "@/models"
 import {
   VALIDATORS,
@@ -255,6 +255,133 @@ export function useGeneralData() {
       }
     }
   }, [generalData.curp, generalData.saldoAfore])
+
+  // --- auto-calculate edad and fechaNacimiento from CURP -----------------
+  useEffect(() => {
+    const curp = generalData.curp.trim()
+
+    // Si no hay CURP válido, limpiar campos calculados
+    if (!curp || curp.length !== CURP_LENGTH) {
+      if (generalData.fechaNacimiento || generalData.edad) {
+        setGeneralData({ ...generalData, fechaNacimiento: "", edad: "" })
+      }
+      return
+    }
+
+    // Extraer fecha de nacimiento del CURP
+    const fechaNacimiento = extractBirthdateFromCURP(curp)
+
+    if (!fechaNacimiento) {
+      // CURP inválido, limpiar campos
+      if (generalData.fechaNacimiento || generalData.edad) {
+        setGeneralData({ ...generalData, fechaNacimiento: "", edad: "" })
+      }
+      return
+    }
+
+    // Formatear fecha de nacimiento a formato ISO (YYYY-MM-DD)
+    const fechaNacimientoISO = fechaNacimiento.toISOString().split('T')[0]
+
+    // Calcular edad en años
+    const hoy = new Date()
+    let edad = hoy.getFullYear() - fechaNacimiento.getFullYear()
+    const mes = hoy.getMonth() - fechaNacimiento.getMonth()
+    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
+      edad--
+    }
+
+    // Actualizar solo si los valores han cambiado
+    if (generalData.fechaNacimiento !== fechaNacimientoISO || generalData.edad !== String(edad)) {
+      setGeneralData({
+        ...generalData,
+        fechaNacimiento: fechaNacimientoISO,
+        edad: String(edad)
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generalData.curp])
+
+  // --- auto-calculate sinVigenciaDerechos from fechaBaja -----------------
+  useEffect(() => {
+    const fechaBaja = generalData.fechaBaja.trim()
+
+    // Si no hay fecha de baja válida, limpiar campo calculado
+    if (!fechaBaja) {
+      if (generalData.sinVigenciaDerechos) {
+        setGeneralData({ ...generalData, sinVigenciaDerechos: "" })
+      }
+      return
+    }
+
+    try {
+      // Calcular sin vigencia de derechos: fecha_baja + 5 años
+      const baja = new Date(fechaBaja)
+      const sinVigencia = new Date(baja)
+      sinVigencia.setFullYear(sinVigencia.getFullYear() + 5)
+      const sinVigenciaISO = sinVigencia.toISOString().split('T')[0]
+
+      // Actualizar solo si el valor ha cambiado
+      if (generalData.sinVigenciaDerechos !== sinVigenciaISO) {
+        setGeneralData({
+          ...generalData,
+          sinVigenciaDerechos: sinVigenciaISO
+        })
+      }
+    } catch {
+      // Fecha inválida, limpiar campo
+      if (generalData.sinVigenciaDerechos) {
+        setGeneralData({ ...generalData, sinVigenciaDerechos: "" })
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generalData.fechaBaja])
+
+  // --- auto-calculate leyAplicable from fechaNacimiento, semanas, fechaBaja -----------------
+  useEffect(() => {
+    const fechaNacimiento = generalData.fechaNacimiento.trim()
+    const semanas = Number(generalData.semanasCotizadas) || 0
+    const fechaBaja = generalData.fechaBaja.trim()
+
+    // Si faltan datos esenciales, limpiar campo calculado
+    if (!fechaNacimiento || !semanas || !fechaBaja) {
+      if (generalData.leyAplicable) {
+        setGeneralData({ ...generalData, leyAplicable: "" })
+      }
+      return
+    }
+
+    try {
+      // Calcular fecha aproximada de primera cotización
+      // fecha_primera_cotizacion ≈ fecha_baja - (semanas_cotizadas / 52 años)
+      const baja = new Date(fechaBaja)
+      const añosCotizados = semanas / 52
+      const fechaPrimeraCotizacionAprox = new Date(baja)
+      fechaPrimeraCotizacionAprox.setFullYear(
+        fechaPrimeraCotizacionAprox.getFullYear() - Math.floor(añosCotizados)
+      )
+
+      // Fecha límite para LEY 73: 1 de julio de 1997
+      const fechaLimite = new Date('1997-07-01')
+
+      // Determinar ley aplicable
+      let leyCalculada: "LEY_73" | "LEY_97" =
+        fechaPrimeraCotizacionAprox < fechaLimite ? "LEY_73" : "LEY_97"
+
+      // Actualizar solo si el valor ha cambiado
+      if (generalData.leyAplicable !== leyCalculada) {
+        setGeneralData({
+          ...generalData,
+          leyAplicable: leyCalculada
+        })
+      }
+    } catch {
+      // Error en cálculo, limpiar campo
+      if (generalData.leyAplicable) {
+        setGeneralData({ ...generalData, leyAplicable: "" })
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generalData.fechaNacimiento, generalData.semanasCotizadas, generalData.fechaBaja])
 
   // --- auto-update modalidad when options change -------------------------
   useEffect(() => {

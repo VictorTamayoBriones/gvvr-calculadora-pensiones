@@ -1,0 +1,43 @@
+.InformeCostoMensual {
+    width: 100%;
+}
+
+.InformeCostoMensual header {
+    display: flex;
+}
+
+.InformeCostoMensual header img {
+    width: 20%;
+}
+
+.InformeCostoMensual header div {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.InformeCostoMensual header div h1 {
+    font-weight: bold;
+    font-size: 26px;
+    text-align: center;
+    word-spacing: 5px;
+}
+
+.InformeCostoMensual header div p {
+    align-self: flex-end;
+    display: inline-block;
+    border-bottom: double 1px #000;
+    width: max-content;
+    position: relative;
+}
+
+.InformeCostoMensual header div p::after {
+    content: '';
+    width: 100%;
+    height: 1px;
+    background: #000;
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+}
