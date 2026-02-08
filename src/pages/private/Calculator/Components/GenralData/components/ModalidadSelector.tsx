@@ -47,9 +47,9 @@ export function ModalidadSelector({
               <p className="font-medium mb-1">Tipo de financiamiento disponible</p>
               <ul className="text-xs space-y-1 list-disc list-inside">
                 <li>Las opciones se calculan automáticamente según:</li>
-                <li>• Edad del prospecto (extraída del CURP)</li>
-                <li>• Saldo AFORE disponible</li>
-                <li>• Capacidad de préstamo calculada</li>
+                <li>Edad del prospecto (extraída del CURP)</li>
+                <li>Saldo AFORE disponible</li>
+                <li>Capacidad de préstamo calculada</li>
               </ul>
             </TooltipContent>
           </Tooltip>

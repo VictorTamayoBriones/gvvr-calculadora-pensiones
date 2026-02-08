@@ -147,6 +147,9 @@ export function DatosPersonalesSection({
               touched={touched.saldoAfore}
               onChange={handleChange}
               onBlur={handleBlur}
+              tooltip={{
+                title: "Es el monto disponible en las subcuentas de SAR 92, Retiro 97 y Vivienda.",
+              }}
             />
 
             <FormInput
