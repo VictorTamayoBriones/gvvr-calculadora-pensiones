@@ -4,6 +4,9 @@ import { InformacionAsesor } from './components/InformacionAsesor';
 import { InformacionCliente } from './components/InformacionCliente';
 import { InformacionContrato } from './components/InformacionContrato';
 import { PresupuestoInicial } from './components/PresupuestoInicial';
+import { PeriodoEjercicio } from './components/PeriodoEjercicio';
+import { DatosPension } from './components/DatosPension';
+import { Modalidades } from './components/Modalidades';
 
 export default function InformeCostoMensual() {
   const {
@@ -14,6 +17,7 @@ export default function InformeCostoMensual() {
     infoVigencia,
     validacionesCliente,
     validacionesContrato,
+    validacionesPresupuesto,
     handleFechaFirmaChange,
     handleFechaFinChange
   } = useInformeCostoMensual();
@@ -42,10 +46,17 @@ export default function InformeCostoMensual() {
           onFechaFinChange={handleFechaFinChange}
         />
 
+        <PeriodoEjercicio generalData={generalData} />
+
+        <DatosPension generalData={generalData} />
+
         <PresupuestoInicial
           generalData={generalData}
+          validaciones={validacionesPresupuesto}
           onPrestamoFinancieroChange={(value) => updateGeneralData({ prestamoFinanciero: value })}
         />
+
+        <Modalidades generalData={generalData} />
       </form>
     </div>
   );

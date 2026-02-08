@@ -4,3 +4,6 @@ export { VigenciaDerechosInfo } from './VigenciaDerechosInfo';
 export { InformacionCliente } from './InformacionCliente';
 export { InformacionContrato } from './InformacionContrato';
 export { PresupuestoInicial } from './PresupuestoInicial';
+export { PeriodoEjercicio } from './PeriodoEjercicio';
+export { DatosPension } from './DatosPension';
+export { Modalidades } from './Modalidades';

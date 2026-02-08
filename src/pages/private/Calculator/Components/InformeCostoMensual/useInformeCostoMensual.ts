@@ -87,16 +87,25 @@ export function useInformeCostoMensual() {
   }, [calcularTotalMeses, calcularSemanasAlFinal, updateGeneralData, generalData.fechaInicioContrato, generalData.semanasCotizadas]);
 
   // Calcular automáticamente el monto total para invertir cuando cambien los valores
+  // REGLA CRÍTICA: El saldo AFORE solo se usa en modalidades REACTIVA TRADICIONAL y FINANCIADO 1
   const calcularMontoTotal = useCallback(() => {
     const saldoAfore = parseFloat(generalData.saldoAfore) || 0;
     const prestamoFinanciero = parseFloat(generalData.prestamoFinanciero) || 0;
-    const montoTotal = saldoAfore + prestamoFinanciero;
+
+    // Solo sumar AFORE si la modalidad usa AFORE (REACTIVA TRADICIONAL o FINANCIADO 1)
+    // En FINANCIADO 100 y REACTIVA FINANCIADO 100, NO se usa el saldo AFORE
+    const usaAfore = generalData.modalidad === 'REACTIVA TRADICIONAL' ||
+                     generalData.modalidad === 'FINANCIADO 1';
+
+    const montoTotal = usaAfore
+      ? saldoAfore + prestamoFinanciero
+      : prestamoFinanciero;
 
     if (montoTotal > 0) {
       return montoTotal.toString();
     }
     return '';
-  }, [generalData.saldoAfore, generalData.prestamoFinanciero]);
+  }, [generalData.saldoAfore, generalData.prestamoFinanciero, generalData.modalidad]);
 
   // Actualizar monto total cuando cambien saldo AFORE o préstamo
   const montoTotalCalculado = useMemo(() => {
@@ -350,6 +359,110 @@ export function useInformeCostoMensual() {
     generalData.leyAplicable
   ]);
 
+  // Validaciones de presupuesto (REGLAS_NEGOCIO_PRESUPUESTO.md)
+  const validacionesPresupuesto = useMemo(() => {
+    const errores: string[] = [];
+    const advertencias: string[] = [];
+    const info: string[] = [];
+
+    const saldoAfore = parseFloat(generalData.saldoAfore) || 0;
+    const prestamo = parseFloat(generalData.prestamoFinanciero) || 0;
+    const montoTotal = parseFloat(generalData.montoTotalInvertir) || 0;
+    const edad = Number(generalData.edad) || 0;
+    const modalidad = generalData.modalidad;
+
+    // 1. VALIDACIÓN DE SALDO AFORE
+    if (saldoAfore < 0) {
+      errores.push("El saldo AFORE no puede ser negativo");
+    }
+
+    // Advertencia si tiene AFORE pero la modalidad no lo usa
+    const usaAfore = modalidad === 'REACTIVA TRADICIONAL' || modalidad === 'FINANCIADO 1';
+    if (saldoAfore > 0 && !usaAfore) {
+      advertencias.push(
+        `Tiene $${saldoAfore.toLocaleString('es-MX')} en AFORE que NO se usará en ${modalidad}. ` +
+        `El saldo AFORE solo se utiliza en REACTIVA TRADICIONAL y FINANCIADO 1.`
+      );
+      info.push(`Considere una modalidad que aproveche su saldo AFORE`);
+    }
+
+    // 2. VALIDACIÓN DE PRÉSTAMO
+    if (prestamo < 0) {
+      errores.push("El préstamo financiero no puede ser negativo");
+    }
+
+    // 3. VALIDACIÓN DE MONTO TOTAL
+    const montoCalculado = usaAfore ? saldoAfore + prestamo : prestamo;
+    if (Math.abs(montoTotal - montoCalculado) > 0.01) {
+      errores.push(
+        `El monto total ($${montoTotal.toLocaleString('es-MX')}) no coincide con el cálculo esperado ` +
+        `($${montoCalculado.toLocaleString('es-MX')})`
+      );
+    }
+
+    // 4. VALIDACIÓN CON MODALIDAD SELECCIONADA
+    // Nota: Estos valores son aproximados basados en el documento REGLAS_NEGOCIO_PRESUPUESTO.md
+    // En producción deberían venir de una configuración o cálculo dinámico
+    const requisitos: { [key: string]: { minimo: number, nombre: string } } = {
+      'REACTIVA TRADICIONAL': { minimo: 62550, nombre: 'REACTIVA TRADICIONAL' },
+      'FINANCIADO 1': { minimo: 62550, nombre: 'FINANCIADO 1' },
+      'FINANCIADO 100': { minimo: 0, nombre: 'FINANCIADO 100' },
+      'REACTIVA FINANCIADO 100': { minimo: 0, nombre: 'REACTIVA FINANCIADO 100' }
+    };
+
+    const req = requisitos[modalidad];
+    if (req) {
+      const presupuestoDisponible = usaAfore ? saldoAfore + prestamo : prestamo;
+
+      if (presupuestoDisponible < req.minimo && req.minimo > 0) {
+        const faltante = req.minimo - presupuestoDisponible;
+        errores.push(
+          `Presupuesto insuficiente para ${req.nombre}. ` +
+          `Requiere $${req.minimo.toLocaleString('es-MX')}, ` +
+          `tiene $${presupuestoDisponible.toLocaleString('es-MX')}. ` +
+          `Falta: $${faltante.toLocaleString('es-MX')}`
+        );
+      } else if (presupuestoDisponible >= req.minimo && req.minimo > 0) {
+        const sobrante = presupuestoDisponible - req.minimo;
+        info.push(
+          `✓ Presupuesto suficiente para ${req.nombre}. ` +
+          `Sobrante: $${sobrante.toLocaleString('es-MX')}`
+        );
+      }
+    }
+
+    // 5. RESTRICCIÓN DE EDAD PARA REACTIVA FINANCIADO 100
+    if (modalidad === 'REACTIVA FINANCIADO 100' && edad >= 68) {
+      errores.push(
+        "⚠️ RESTRICCIÓN CRÍTICA: REACTIVA FINANCIADO 100% solo es viable para menores de 68 años"
+      );
+    }
+
+    // 6. INFORMACIÓN SOBRE DESGLOSE DEL PRESUPUESTO
+    if (montoTotal > 0) {
+      if (usaAfore && saldoAfore > 0) {
+        info.push(
+          `Presupuesto total: $${montoTotal.toLocaleString('es-MX')} ` +
+          `(AFORE: $${saldoAfore.toLocaleString('es-MX')} + ` +
+          `Préstamo: $${prestamo.toLocaleString('es-MX')})`
+        );
+      } else {
+        info.push(
+          `Presupuesto total: $${montoTotal.toLocaleString('es-MX')} ` +
+          `(solo Préstamo${!usaAfore ? ', AFORE no aplica' : ''})`
+        );
+      }
+    }
+
+    return { errores, advertencias, info };
+  }, [
+    generalData.saldoAfore,
+    generalData.prestamoFinanciero,
+    generalData.montoTotalInvertir,
+    generalData.edad,
+    generalData.modalidad
+  ]);
+
   return {
     generalData,
     updateGeneralData,
@@ -358,6 +471,7 @@ export function useInformeCostoMensual() {
     infoVigencia,
     validacionesCliente,
     validacionesContrato,
+    validacionesPresupuesto,
     // Handlers para autocompletado
     handleFechaFirmaChange,
     handleFechaFinChange

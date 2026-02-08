@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router"
 import PrivateRoute from "@/guards/PrivateRoute"
+import { RequireCalculatorData } from "@/guards/RequireCalculatorData"
 import PrivateLayout from "@/layouts/PrivateLayout"
 import { Login } from "@PublicPages";
 import { Dashboard, Calculator } from "@PrivatePages";
@@ -17,8 +18,22 @@ export default function AppRoutes() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route element={<Calculator/>} >
             <Route path="/calculadora/datosGenerales" element={<GeneralData/>} />
-            <Route path="/calculadora/cotizacion" element={<Cotizacion/>} />
-            <Route path="/calculadora/InformeCostoMensual" element={<InformeCostoMensual/>} />
+            <Route
+              path="/calculadora/cotizacion"
+              element={
+                <RequireCalculatorData>
+                  <Cotizacion/>
+                </RequireCalculatorData>
+              }
+            />
+            <Route
+              path="/calculadora/InformeCostoMensual"
+              element={
+                <RequireCalculatorData>
+                  <InformeCostoMensual/>
+                </RequireCalculatorData>
+              }
+            />
           </Route>
         </Route>
       </Route>
