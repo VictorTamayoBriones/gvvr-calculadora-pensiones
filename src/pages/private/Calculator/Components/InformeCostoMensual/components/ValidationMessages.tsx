@@ -1,12 +1,17 @@
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Info } from 'lucide-react';
 
 interface ValidationMessagesProps {
   errores: string[];
   advertencias: string[];
+  info?: string[];
 }
 
-export function ValidationMessages({ errores, advertencias }: ValidationMessagesProps) {
-  if (errores.length === 0 && advertencias.length === 0) {
+/**
+ * Renderiza mensajes de validación agrupados por severidad: errores (rojo), advertencias (ámbar) e info (azul).
+ * No renderiza nada si las tres listas están vacías.
+ */
+export function ValidationMessages({ errores, advertencias, info = [] }: ValidationMessagesProps) {
+  if (errores.length === 0 && advertencias.length === 0 && info.length === 0) {
     return null;
   }
 
@@ -29,6 +34,16 @@ export function ValidationMessages({ errores, advertencias }: ValidationMessages
         >
           <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />
           <p className="text-sm font-medium">{advertencia}</p>
+        </div>
+      ))}
+
+      {info.map((informacion, index) => (
+        <div
+          key={`info-${index}`}
+          className="flex items-start gap-3 p-4 rounded-lg border bg-blue-50 dark:bg-blue-950/30 border-blue-500 dark:border-blue-500/50 text-blue-900 dark:text-blue-200"
+        >
+          <Info className="h-5 w-5 mt-0.5 shrink-0" />
+          <p className="text-sm font-medium">{informacion}</p>
         </div>
       ))}
     </div>

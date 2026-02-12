@@ -35,14 +35,15 @@ All imports across the app use `@/`. There are no barrel files at the top level.
 
 ```
 <Routes>
+  /                           → Login (public, duplicate)
   /login                      → Login (public)
   (pathless)                  → PrivateRoute (auth guard)
     (pathless)                → PrivateLayout (shared sidebar shell)
       /dashboard              → Dashboard
       /calculadora            → Calculator (stepper)
         /datosGenerales       → GeneralData (main form)
-        /cotizacion           → Cotizacion (placeholder)
-        /InformeCostoMensual  → InformeCostoMensual
+        /cotizacion           → Cotizacion (RequireCalculatorData)
+        /InformeCostoMensual  → InformeCostoMensual (RequireCalculatorData)
 ```
 
 - **PrivateRoute** (`src/guards/PrivateRoute.tsx`) — reads `useAuth().user`. Redirects to `/login` if null.
@@ -125,6 +126,48 @@ GenralData/
 
 **Data flow pattern:** `GeneralData` (orchestrator) → passes `onChange(field, value)` callbacks down → sections emit changes up → `useGeneralData` calls `updateGeneralData` on the context. Sections register their `validate()` functions via `onValidationReady` callbacks so the parent can trigger full-form validation on submit.
 
+### Calculator Components — InformeCostoMensual
+
+The monthly cost report module. Follows the same layered pattern as GenralData:
+
+```
+InformeCostoMensual/
+├── InformeCostoMensual.tsx        # Orchestrator component (report layout)
+├── useInformeCostoMensual.ts      # Orchestrator hook (validations + date handlers)
+├── style.css                      # Custom CSS (exception to Tailwind-only pattern)
+├── calculoMontoPension.ts         # Pure functions: pension amount from age/year lookup
+├── tablaPensiones.ts              # Pension amounts table (TABLA_PENSIONES[year][age])
+├── lineaTiempoRetoma.ts           # Pure functions: RETOMA payment timeline generation
+└── components/
+    ├── InformacionAsesor.tsx       # Section: advisor info (read-only)
+    ├── InformacionCliente.tsx      # Section: client data + vigencia status
+    ├── VigenciaDerechosInfo.tsx    # Vigencia de derechos display
+    ├── InformacionContrato.tsx     # Section: contract dates (editable)
+    ├── PeriodoEjercicio.tsx        # Section: exercise period display
+    ├── DatosPension.tsx           # Section: pension amount calculation display
+    ├── PresupuestoInicial.tsx      # Section: initial budget + loan input
+    ├── Modalidades.tsx            # Section: modality-specific payment tables
+    ├── ValidationMessages.tsx      # Reusable validation message renderer
+    └── index.ts                    # Barrel export
+```
+
+**Key business logic files:**
+- `tablaPensiones.ts` — `TABLA_PENSIONES[year][age]` lookup table (ages 60–83, years 2023–2027). Updated periodically with official IMSS pension amounts.
+- `calculoMontoPension.ts` — calculates pension amount: `edadAlPensionarse = edadActual + añosAdicionales(fechaInicio, fechaFin)`, then looks up `TABLA_PENSIONES[añoPension][edadAlPensionarse]`.
+- `lineaTiempoRetoma.ts` — generates RETOMA payment schedules (14–18 months). First month has a special price based on current date; subsequent months use year-based pricing from `PRECIOS_ANUALES`. Adds gestoría (fixed $18,000 for 14-month contracts, variable otherwise).
+
+**`useInformeCostoMensual` orchestrates three validation groups** (all memoized): `validacionesCliente` (age/weeks requirements), `validacionesContrato` (date coherence, minimum 14 months), `validacionesPresupuesto` (budget sufficiency per modality). Each returns `{ errores, advertencias, info }`.
+
+### Helpers (`src/helpers/`)
+
+- `verifyCURP.ts` — CURP format validation
+- `extractBirthdateFromCURP.ts` — extracts birthdate from CURP characters
+- `formatText.ts` — `addComa()` for Mexican number formatting (thousands separator)
+
+### Global Constants (`src/constants.ts`)
+
+App-wide constants like `COSTO_GESTORIA` ($18,000). Module-specific constants live in their own `constants.ts` files (e.g., `GenralData/constants.ts` for modalities).
+
 ### Models (`src/models/calculator.types.ts`)
 
 ```typescript
@@ -156,6 +199,8 @@ interface GeneralDataForm {
 
 Tailwind v4 with CSS-variable theming in `src/index.css`. The `@theme inline` block maps custom properties to Tailwind color tokens. Dark mode via `.dark` class. No `tailwind.config.*` file — all config is inline.
 
+**Exception:** `InformeCostoMensual/style.css` uses custom CSS for print-oriented report layout. New calculator modules should prefer Tailwind classes.
+
 ### Sidebar system
 
 `SidebarProvider` lives in `PrivateLayout`. `<Sidebar>` and `<SidebarInset>` are siblings inside the provider's wrapper div. The sidebar collapses to an icon rail on desktop and renders in a `Sheet` (slide-over) on mobile. The rail uses `group-data-[...]` Tailwind modifiers to inherit state from the parent `group peer` wrapper.
@@ -168,9 +213,15 @@ All business rules and domain documentation live in `docs/`. Key files:
 |------|---------|
 | `docs/reglas_negocio_datos_generales.md` | General data validation rules |
 | `docs/reglas_combo_modalidad.md` | Modality selector rules |
+| `docs/reglas-modalidad-C17.md` | C17 modality rules |
 | `docs/calculo_k25_completo.md` | K25 pension reference value |
 | `docs/prestamo_financiero_completo.md` | Loan calculation rules |
 | `docs/reglas-linea-tiempo-retoma.md` | Timeline calculation rules |
 | `docs/REGLAS_NEGOCIO_CLIENTE.md` | Client validation rules |
 | `docs/REGLAS_NEGOCIO_CONTRATO.md` | Contract rules |
 | `docs/REGLAS_NEGOCIO_PRESUPUESTO.md` | Budget rules |
+| `docs/IMPLEMENTACION_PRESUPUESTO.md` | Budget implementation details |
+| `docs/REGLAS_VALIDACIONES_FLUJOS_MONTO_PENSION.md` | Pension amount validation flows |
+| `docs/CALCULO_GESTORIA.md` | Gestoría fee calculation rules |
+| `docs/documentacion_tecnica_datos_generales.md` | Technical docs for general data |
+| `docs/analisis-tecnico-migracion-f100.md` | F100 migration analysis |

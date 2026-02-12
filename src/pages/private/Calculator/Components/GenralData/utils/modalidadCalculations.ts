@@ -3,9 +3,6 @@ import type { Modalidad } from "@/models"
 import {
   MODALIDADES,
   VALOR_REFERENCIA,
-  FACTOR_PENSION,
-  FACTOR_PRESTAMO_MULTIPLICADOR,
-  PRESTAMO_DESCUENTO,
   CURP_LENGTH,
   SALDO_MINIMO_PARA_CALCULO,
   EDAD_MINIMA_MESES,
@@ -17,6 +14,7 @@ import {
   crearDescripcionFinanciado100,
   crearDescripcionFinanciado1,
 } from "../constants"
+import { calcularPrestamoSugerido } from "./financialCalculations"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -58,17 +56,6 @@ export function validarCURP(curp: string): { valido: boolean; edadMeses: number 
 }
 
 /**
- * Calcula el préstamo disponible basado en el saldo
- */
-export function calcularPrestamo(saldo: number): number {
-  if (saldo >= VALOR_REFERENCIA) {
-    return 0
-  }
-
-  return Math.max(0, FACTOR_PENSION * FACTOR_PRESTAMO_MULTIPLICADOR - PRESTAMO_DESCUENTO)
-}
-
-/**
  * Determina si el cliente tiene edad mínima requerida
  */
 export function cumpleEdadMinima(edadMeses: number): boolean {
@@ -106,7 +93,7 @@ export function modalidadesPorEdadMaxima(edadMeses: number): ModalidadesDisponib
 export function modalidadesPorCapacidadFinanciera(
   saldo: number
 ): ModalidadesDisponibles {
-  const prestamo = calcularPrestamo(saldo)
+  const prestamo = calcularPrestamoSugerido(saldo)
   const totalDisponible = saldo + prestamo
   const esSuficiente = totalDisponible >= VALOR_REFERENCIA
 

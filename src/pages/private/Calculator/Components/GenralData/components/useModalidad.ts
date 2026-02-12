@@ -14,9 +14,10 @@ interface UseModalidadProps {
   onValidationReady?: (validate: () => boolean) => void
 }
 
-// ---------------------------------------------------------------------------
-// Hook: Maneja la lógica de Modalidad
-// ---------------------------------------------------------------------------
+/**
+ * Gestiona la selección y validación de la modalidad de financiamiento.
+ * Calcula modalidades disponibles según CURP y saldo AFORE, y expone validación al padre.
+ */
 export function useModalidad({
   curp,
   saldoAfore,
@@ -46,17 +47,9 @@ export function useModalidad({
     [onChange]
   )
 
-  // Auto-actualizar modalidad cuando cambian las opciones disponibles
-  useEffect(() => {
-    if (!modalidadesDisponibles.modalidadSugerida) return
-
-    const esModalidadValida = modalidadesDisponibles.opciones.includes(modalidad)
-
-    if (!esModalidadValida && modalidadesDisponibles.modalidadSugerida !== modalidad) {
-      onChange("modalidad", modalidadesDisponibles.modalidadSugerida)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [modalidadesDisponibles.modalidadSugerida, modalidadesDisponibles.opciones.length])
+  // Expose whether current modalidad is valid so the parent can act explicitly
+  const esModalidadValida = modalidadesDisponibles.opciones.includes(modalidad)
+  const modalidadSugerida = modalidadesDisponibles.modalidadSugerida
 
   // Validación
   const validate = useCallback((): boolean => {
@@ -76,6 +69,8 @@ export function useModalidad({
   return {
     modalidad,
     modalidadesDisponibles,
+    modalidadSugerida,
+    esModalidadValida,
     error,
     touched,
     handleModalidadChange,

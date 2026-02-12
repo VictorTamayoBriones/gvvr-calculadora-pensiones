@@ -39,16 +39,9 @@ export const TIPO_FINANCIAMIENTO = {
 export type TipoFinanciamiento = typeof TIPO_FINANCIAMIENTO[keyof typeof TIPO_FINANCIAMIENTO]
 
 // ---------------------------------------------------------------------------
-// Modalidad types (matching calculator.types.ts)
+// Modalidad types - Re-exported from domain models
 // ---------------------------------------------------------------------------
-export const MODALIDADES = {
-  FINANCIADO_1: "FINANCIADO 1",
-  FINANCIADO_100: "FINANCIADO 100",
-  REACTIVA_TRADICIONAL: "REACTIVA TRADICIONAL",
-  REACTIVA_FINANCIADO_100: "REACTIVA FINANCIADO 100",
-} as const
-
-export type Modalidad = typeof MODALIDADES[keyof typeof MODALIDADES]
+export { MODALIDADES, type Modalidad } from "@/models/calculator.types"
 
 // ---------------------------------------------------------------------------
 // User-facing messages

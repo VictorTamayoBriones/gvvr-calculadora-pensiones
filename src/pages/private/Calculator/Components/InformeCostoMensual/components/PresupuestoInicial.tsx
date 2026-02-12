@@ -1,8 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field, FieldContent, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, Info } from 'lucide-react';
+import { ValidationMessages } from './ValidationMessages';
 import type { GeneralDataForm } from '@/models';
+import { usaAforeEnModalidad } from '@/models/calculator.types';
 
 interface PresupuestoInicialProps {
   generalData: GeneralDataForm;
@@ -14,14 +15,17 @@ interface PresupuestoInicialProps {
   onPrestamoFinancieroChange: (value: string) => void;
 }
 
+/**
+ * Sección de presupuesto inicial: muestra saldo AFORE (solo lectura), préstamo financiero
+ * (editable) y monto total calculado. Incluye validaciones de suficiencia por modalidad.
+ */
 export function PresupuestoInicial({
   generalData,
   validaciones,
   onPrestamoFinancieroChange
 }: PresupuestoInicialProps) {
   // Determinar si la modalidad usa AFORE
-  const usaAfore = generalData.modalidad === 'REACTIVA TRADICIONAL' ||
-                   generalData.modalidad === 'FINANCIADO 1';
+  const usaAfore = usaAforeEnModalidad(generalData.modalidad);
 
   return (
     <Card>
@@ -87,42 +91,11 @@ export function PresupuestoInicial({
           </div>
 
           {/* Validaciones del presupuesto */}
-          {(validaciones.errores.length > 0 || validaciones.advertencias.length > 0 || validaciones.info.length > 0) && (
-            <div className="space-y-3 mt-4">
-              {/* Errores críticos */}
-              {validaciones.errores.map((error, index) => (
-                <div
-                  key={`budget-error-${index}`}
-                  className="flex items-start gap-3 p-4 rounded-lg border bg-destructive/10 border-destructive text-destructive"
-                >
-                  <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />
-                  <p className="text-sm font-medium">{error}</p>
-                </div>
-              ))}
-
-              {/* Advertencias */}
-              {validaciones.advertencias.map((advertencia, index) => (
-                <div
-                  key={`budget-warning-${index}`}
-                  className="flex items-start gap-3 p-4 rounded-lg border bg-amber-50 dark:bg-amber-950/30 border-amber-500 dark:border-amber-500/50 text-amber-900 dark:text-amber-200"
-                >
-                  <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />
-                  <p className="text-sm font-medium">{advertencia}</p>
-                </div>
-              ))}
-
-              {/* Información */}
-              {validaciones.info.map((informacion, index) => (
-                <div
-                  key={`budget-info-${index}`}
-                  className="flex items-start gap-3 p-4 rounded-lg border bg-blue-50 dark:bg-blue-950/30 border-blue-500 dark:border-blue-500/50 text-blue-900 dark:text-blue-200"
-                >
-                  <Info className="h-5 w-5 mt-0.5 shrink-0" />
-                  <p className="text-sm font-medium">{informacion}</p>
-                </div>
-              ))}
-            </div>
-          )}
+          <ValidationMessages
+            errores={validaciones.errores}
+            advertencias={validaciones.advertencias}
+            info={validaciones.info}
+          />
         </FieldGroup>
       </CardContent>
     </Card>

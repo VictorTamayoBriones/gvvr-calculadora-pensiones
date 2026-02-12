@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { AlertMessage } from "./AlertMessage"
 import { ModalidadSelector } from "./ModalidadSelector"
@@ -15,9 +16,11 @@ interface ModalidadSectionProps {
   onValidationReady?: (validate: () => boolean) => void
 }
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+/**
+ * Sección de modalidad de financiamiento. Muestra alertas de elegibilidad,
+ * mensajes de datos requeridos y el selector de modalidad con auto-selección
+ * cuando la modalidad actual deja de ser válida.
+ */
 export function ModalidadSection({
   curp,
   saldoAfore,
@@ -25,13 +28,20 @@ export function ModalidadSection({
   onChange,
   onValidationReady,
 }: ModalidadSectionProps) {
-  const { modalidadesDisponibles, handleModalidadChange } = useModalidad({
+  const { modalidadesDisponibles, modalidadSugerida, esModalidadValida, handleModalidadChange } = useModalidad({
     curp,
     saldoAfore,
     modalidad,
     onChange,
     onValidationReady,
   })
+
+  // Auto-select suggested modality when current one becomes invalid (explicit side effect)
+  useEffect(() => {
+    if (modalidadSugerida && !esModalidadValida) {
+      onChange("modalidad", modalidadSugerida)
+    }
+  }, [modalidadSugerida, esModalidadValida, onChange])
 
   return (
     <Card>
