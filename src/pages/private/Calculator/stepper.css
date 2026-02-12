@@ -2,7 +2,7 @@
     width: 100%;
     max-width: max-content;
     display: flex;
-    background: #00000017;
+    background: var(--muted);
     border-radius: 5px;
     overflow: hidden;
 }
@@ -12,6 +12,7 @@
     cursor: pointer;
     position: relative;
     border-radius: 0 0 30px;
+    color: var(--muted-foreground);
 }
 
 .stepper .step::after {
@@ -30,12 +31,12 @@
 }
 
 .stepper .step.selected {
-    background: var(--color-blue-500);
-    color: white;
+    background: var(--primary);
+    color: var(--primary-foreground);
 }
 
 .stepper .step.selected::after{
-    background: var(--color-blue-500);
+    background: var(--primary);
 }
 
 .stepper .step.selected:nth-child(even)::before{
@@ -48,8 +49,7 @@
     left: -18px;
     z-index: 1;
     border-radius: 0 100px 0 0 ;
-    background: linear-gradient(243deg,rgba(255, 255, 255, 0) 40%, var(--color-blue-500) 0%) !important;
-    background: red;
+    background: linear-gradient(243deg,rgba(255, 255, 255, 0) 40%, var(--primary) 0%) !important;
 }
 
 .stepper .step:last-child::after{

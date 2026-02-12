@@ -16,7 +16,7 @@ import { Separator } from "@/components/ui/separator"
 import { Link, useNavigate } from "react-router"
 import { useAuth } from "@/contexts/AuthContext"
 import { useCalculator } from "@/contexts/CalculatorContext"
-import LOGO from "@/assets/logo_gvvr.webp"
+import LOGO from "@/assets/retirate_bien.webp"
 
 const menuItems = [
   { title: "Inicio",         icon: Home,       url: "/dashboard" },
