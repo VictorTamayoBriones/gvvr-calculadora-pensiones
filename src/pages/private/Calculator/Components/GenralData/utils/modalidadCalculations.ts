@@ -2,7 +2,6 @@ import { getAgeInMonthsFromCURP } from "@/helpers/extractBirthdateFromCURP"
 import type { Modalidad } from "@/models"
 import {
   MODALIDADES,
-  VALOR_REFERENCIA,
   CURP_LENGTH,
   SALDO_MINIMO_PARA_CALCULO,
   EDAD_MINIMA_MESES,
@@ -91,11 +90,13 @@ export function modalidadesPorEdadMaxima(edadMeses: number): ModalidadesDisponib
  * Calcula las modalidades disponibles según capacidad financiera
  */
 export function modalidadesPorCapacidadFinanciera(
-  saldo: number
+  saldo: number,
+  pensionMensual: number,
+  costoTotal: number
 ): ModalidadesDisponibles {
-  const prestamo = calcularPrestamoSugerido(saldo)
+  const prestamo = calcularPrestamoSugerido(saldo, pensionMensual, costoTotal)
   const totalDisponible = saldo + prestamo
-  const esSuficiente = totalDisponible >= VALOR_REFERENCIA
+  const esSuficiente = costoTotal <= 0 || totalDisponible >= costoTotal
 
   if (esSuficiente) {
     return {
@@ -110,7 +111,7 @@ export function modalidadesPorCapacidadFinanciera(
     }
   }
 
-  const faltante = VALOR_REFERENCIA - totalDisponible
+  const faltante = costoTotal - totalDisponible
 
   return {
     opciones: [MODALIDADES.FINANCIADO_1 as Modalidad],
@@ -130,7 +131,9 @@ export function modalidadesPorCapacidadFinanciera(
  */
 export function calcularModalidadesDisponibles(
   curp: string,
-  saldoAfore: number
+  saldoAfore: number,
+  pensionMensual: number,
+  costoTotal: number
 ): ModalidadesDisponibles {
   // Validar CURP
   const { valido, edadMeses } = validarCURP(curp)
@@ -186,5 +189,5 @@ export function calcularModalidadesDisponibles(
   }
 
   // Determinar modalidades según capacidad financiera
-  return modalidadesPorCapacidadFinanciera(saldoAfore)
+  return modalidadesPorCapacidadFinanciera(saldoAfore, pensionMensual, costoTotal)
 }

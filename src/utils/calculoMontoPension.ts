@@ -1,4 +1,4 @@
-import { TABLA_PENSIONES, getAñosDisponibles, getRangoEdades } from './tablaPensiones';
+import { TABLA_PENSIONES, getAñosDisponibles, getRangoEdades } from '@/utils/tablaPensiones';
 
 /**
  * Tipos para el resultado del cálculo
@@ -208,21 +208,16 @@ export function calcularMontoPension(
     const edadAlPensionarse = edadActual + añosAdicionales;
 
     // RN-004: Validación de edad mínima para pensión (BLOQUEANTE)
-    if (edadAlPensionarse < 60) {
-      const faltante = 60 - edadAlPensionarse;
+    if (edadAlPensionarse < 59) {
+      const faltante = 59 - edadAlPensionarse;
       return {
         success: false,
         errores: [
-          `Con ${edadAlPensionarse} años al pensionarse, NO alcanza la edad mínima de 60 años. ` +
+          `Con ${edadAlPensionarse} años al pensionarse, NO alcanza la edad mínima de 59 años. ` +
             `Faltan ${faltante} año(s). ` +
             `Considere aumentar la duración del contrato o esperar más tiempo para iniciar el proceso.`,
         ],
       };
-    }
-
-    // Validación de edad ideal (información)
-    if (edadAlPensionarse >= 65 && edadAlPensionarse <= 75) {
-      // Edad en rango ideal, no se requiere advertencia
     }
 
     // ================================================

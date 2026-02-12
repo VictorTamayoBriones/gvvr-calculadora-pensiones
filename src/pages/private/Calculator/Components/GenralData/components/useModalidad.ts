@@ -10,6 +10,8 @@ interface UseModalidadProps {
   curp: string
   saldoAfore: string
   modalidad: Modalidad
+  pensionMensual: number
+  costoTotal: number
   onChange: (field: string, value: string) => void
   onValidationReady?: (validate: () => boolean) => void
 }
@@ -22,6 +24,8 @@ export function useModalidad({
   curp,
   saldoAfore,
   modalidad,
+  pensionMensual,
+  costoTotal,
   onChange,
   onValidationReady,
 }: UseModalidadProps) {
@@ -30,8 +34,8 @@ export function useModalidad({
 
   // Calcular modalidades disponibles basado en CURP y saldo
   const modalidadesDisponibles = useMemo(
-    () => calcularModalidadesDisponibles(curp, Number(saldoAfore) || 0),
-    [curp, saldoAfore]
+    () => calcularModalidadesDisponibles(curp, Number(saldoAfore) || 0, pensionMensual, costoTotal),
+    [curp, saldoAfore, pensionMensual, costoTotal]
   )
 
   // Handler para cambio de modalidad

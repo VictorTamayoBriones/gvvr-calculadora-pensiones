@@ -8,7 +8,6 @@ import { DetalleCalculoPrestamo } from "./DetalleCalculoPrestamo"
 import { useAnalisisFinanciero } from "./useAnalisisFinanciero"
 import type { Modalidad } from "@/models"
 import {
-  FACTOR_PENSION,
   FACTOR_PRESTAMO_MULTIPLICADOR,
   PRESTAMO_DESCUENTO,
 } from "../constants"
@@ -19,6 +18,8 @@ import {
 interface AnalisisFinancieroSectionProps {
   saldoAfore: string
   modalidad: Modalidad
+  pensionMensual: number
+  costoTotal: number
 }
 
 // ---------------------------------------------------------------------------
@@ -27,8 +28,10 @@ interface AnalisisFinancieroSectionProps {
 export function AnalisisFinancieroSection({
   saldoAfore,
   modalidad,
+  pensionMensual,
+  costoTotal,
 }: AnalisisFinancieroSectionProps) {
-  const { resultados } = useAnalisisFinanciero(saldoAfore, modalidad)
+  const { resultados } = useAnalisisFinanciero(saldoAfore, modalidad, pensionMensual, costoTotal)
 
   return (
     <Card>
@@ -85,7 +88,7 @@ export function AnalisisFinancieroSection({
           <>
             <Separator className="my-4" />
             <DetalleCalculoPrestamo
-              factorPension={FACTOR_PENSION}
+              factorPension={resultados.pensionMensual}
               factorMultiplicador={FACTOR_PRESTAMO_MULTIPLICADOR}
               descuento={PRESTAMO_DESCUENTO}
               prestamoSugerido={resultados.prestamoSugerido}

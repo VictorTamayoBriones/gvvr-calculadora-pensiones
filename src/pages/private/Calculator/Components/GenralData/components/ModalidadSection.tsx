@@ -12,6 +12,8 @@ interface ModalidadSectionProps {
   curp: string
   saldoAfore: string
   modalidad: Modalidad
+  pensionMensual: number
+  costoTotal: number
   onChange: (field: string, value: string) => void
   onValidationReady?: (validate: () => boolean) => void
 }
@@ -25,6 +27,8 @@ export function ModalidadSection({
   curp,
   saldoAfore,
   modalidad,
+  pensionMensual,
+  costoTotal,
   onChange,
   onValidationReady,
 }: ModalidadSectionProps) {
@@ -32,6 +36,8 @@ export function ModalidadSection({
     curp,
     saldoAfore,
     modalidad,
+    pensionMensual,
+    costoTotal,
     onChange,
     onValidationReady,
   })

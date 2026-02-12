@@ -30,9 +30,9 @@ export default function Dashboard() {
         {
           STATS.map( stat => {
             return (
-              <div key={JSON.stringify(stat)} className="rounded-xl bg-blue-400 p-4" style={{width:'calc(33.3% - 20px)' , height: 'max-content'}} >
-                <h3 className="font-semibold text-white">{stat.label}</h3>
-                <p className="text-3xl text-blue-800">{addComa(stat.stat)}</p>
+              <div key={JSON.stringify(stat)} className="rounded-xl bg-sidebar p-4" style={{width:'calc(33.3% - 20px)' , height: 'max-content'}} >
+                <h3 className="font-semibold text-accent">{stat.label}</h3>
+                <p className="text-3xl text-accent">{addComa(stat.stat)}</p>
               </div>
             )
           })

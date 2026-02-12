@@ -5,11 +5,16 @@ import type { Modalidad } from "@/models"
 // ---------------------------------------------------------------------------
 // Hook: Maneja la lógica de Análisis Financiero
 // ---------------------------------------------------------------------------
-export function useAnalisisFinanciero(saldoAfore: string, modalidad: Modalidad) {
+export function useAnalisisFinanciero(
+  saldoAfore: string,
+  modalidad: Modalidad,
+  pensionMensual: number,
+  costoTotal: number
+) {
   // Calcular resultados financieros basado en saldo y modalidad
   const resultados = useMemo(
-    () => calcularResultadosFinancieros(Number(saldoAfore) || 0, modalidad),
-    [saldoAfore, modalidad]
+    () => calcularResultadosFinancieros(Number(saldoAfore) || 0, modalidad, pensionMensual, costoTotal),
+    [saldoAfore, modalidad, pensionMensual, costoTotal]
   )
 
   return {

@@ -11,6 +11,7 @@ import {
   useAutoCalcularSinVigenciaDerechos,
   useAutoCalcularLeyAplicable,
   useAutoCalcularFechaInicioContrato,
+  useAutoCalcularTotalMeses,
   useAutoCalcularDatosFinContrato,
 } from "../hooks/useAutoCalculatedFields"
 
@@ -107,6 +108,12 @@ export function useDatosPersonales({
   )
   useAutoCalcularFechaInicioContrato(
     generalData.fechaFirmaContrato,
+    generalData,
+    setGeneralDataWrapper
+  )
+  useAutoCalcularTotalMeses(
+    generalData.semanasCotizadas,
+    generalData.fechaInicioContrato,
     generalData,
     setGeneralDataWrapper
   )

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router"
 import { useCalculator } from "@/contexts/CalculatorContext"
 import type { GeneralDataForm } from "@/models"
 import { ROUTES } from "./constants"
+import { usePensionYCostoTotal } from "./hooks/usePensionYCostoTotal"
 
 // ---------------------------------------------------------------------------
 // Hook Principal - Orquestador con Inversión de Control
@@ -10,6 +11,14 @@ import { ROUTES } from "./constants"
 export function useGeneralData() {
   const navigate = useNavigate()
   const { generalData, updateGeneralData } = useCalculator()
+
+  // Calcular valores dinámicos de pensión y costo total
+  const { pensionMensual, costoTotal } = usePensionYCostoTotal(
+    generalData.curp,
+    generalData.fechaNacimiento,
+    generalData.fechaInicioContrato,
+    generalData.fechaFinContrato
+  )
 
   // Referencias para funciones de validación de cada sección
   const datosPersonalesValidateRef = useRef<(() => boolean) | null>(null)
@@ -61,6 +70,8 @@ export function useGeneralData() {
 
   return {
     generalData,
+    pensionMensual,
+    costoTotal,
     handleFieldChange,
     handleAutoUpdate,
     handleSubmit,

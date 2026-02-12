@@ -6,6 +6,7 @@ import {
   calcularLeyAplicable,
   calcularFechaInicioContrato,
   calcularDatosFinContrato,
+  calcularTotalMesesDesdeSemanas,
 } from "../utils/dateCalculations"
 
 // ---------------------------------------------------------------------------
@@ -151,6 +152,34 @@ export function useAutoCalcularFechaInicioContrato(
     },
     ["fechaInicioContrato"],
     [fechaFirmaContrato]
+  )
+}
+
+/**
+ * Auto-calcula el total de meses del contrato a partir de las semanas cotizadas
+ * y la fecha de inicio del contrato.
+ *
+ * Regla C17 sección 6.1:
+ * - Si semanas > 448 → resolución en 63 semanas (441 días)
+ * - Si semanas ≤ 448 → resolución en (510 - semanas) × 7 días
+ */
+export function useAutoCalcularTotalMeses(
+  semanasCotizadas: string,
+  fechaInicioContrato: string,
+  generalData: GeneralDataForm,
+  setGeneralData: (data: GeneralDataForm) => void
+) {
+  useAutoField(
+    generalData,
+    setGeneralData,
+    () => {
+      const semanas = Number(semanasCotizadas) || 0
+      const totalMeses = calcularTotalMesesDesdeSemanas(semanas, fechaInicioContrato)
+      if (totalMeses === null) return null
+      return { totalMeses: String(totalMeses) }
+    },
+    ["totalMeses"],
+    [semanasCotizadas, fechaInicioContrato]
   )
 }
 

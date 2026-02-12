@@ -3,7 +3,7 @@ import { Field, FieldContent, FieldGroup, FieldLabel } from '@/components/ui/fie
 import { Input } from '@/components/ui/input';
 import { AlertCircle, Info } from 'lucide-react';
 import type { GeneralDataForm } from '@/models';
-import { calcularMontoPension } from '../calculoMontoPension';
+import { calcularMontoPension } from '@/utils/calculoMontoPension';
 import { useMemo } from 'react';
 
 interface DatosPensionProps {

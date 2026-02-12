@@ -4,23 +4,23 @@
  * Estructura: TABLA_PENSIONES[año][edad] = monto
  *
  * Fuente: Tabla oficial de pensiones mínimas del IMSS
- * Actualizada: 2026-02-06
+ * Actualizada: 2026-02-11
  *
  * Reglas:
- * - Año 2023: Montos diferenciados por edad (60-64 vs 65+)
- * - Año 2024: Montos diferenciados por edad (60-64 vs 65+)
- * - Años 2025+: Monto único para todas las edades (60-83)
- * - Edades soportadas: 60 a 83 años
+ * - Año 2023: Montos diferenciados por edad (59-64: porcentaje de $7,003; 65+: $7,003)
+ * - Años 2024+: Monto único para todas las edades (59-83)
+ * - Edades soportadas: 59 a 83 años
  */
 
 export const TABLA_PENSIONES: Record<number, Record<number, number>> = {
-  // Año 2023 - Montos diferenciados por edad
+  // Año 2023 - Montos diferenciados por edad (59-64: porcentaje de $7,003; 65+: $7,003)
   2023: {
-    60: 7003.00,
-    61: 7003.00,
-    62: 7003.00,
-    63: 7003.00,
-    64: 7003.00,
+    59: 5252.25,  // 75% de $7,003
+    60: 5252.25,  // 75% de $7,003
+    61: 5602.40,  // 80% de $7,003
+    62: 5952.55,  // 85% de $7,003
+    63: 6302.70,  // 90% de $7,003
+    64: 6652.85,  // 95% de $7,003
     65: 7003.00,
     66: 7003.00,
     67: 7003.00,
@@ -36,14 +36,15 @@ export const TABLA_PENSIONES: Record<number, Record<number, number>> = {
     77: 7003.00,
     78: 7003.00,
     79: 7003.00,
-    80: 6652.85,
-    81: 6302.70,
-    82: 5952.55,
-    83: 5602.40,
+    80: 7003.00,
+    81: 7003.00,
+    82: 7003.00,
+    83: 7003.00,
   },
 
-  // Año 2024 - Montos diferenciados por edad
+  // Año 2024 - Monto único para todas las edades
   2024: {
+    59: 8400.00,
     60: 8400.00,
     61: 8400.00,
     62: 8400.00,
@@ -67,11 +68,12 @@ export const TABLA_PENSIONES: Record<number, Record<number, number>> = {
     80: 8400.00,
     81: 8400.00,
     82: 8400.00,
-    83: 5252.25,
+    83: 8400.00,
   },
 
   // Año 2025 - Monto único para todas las edades
   2025: {
+    59: 9400.00,
     60: 9400.00,
     61: 9400.00,
     62: 9400.00,
@@ -100,6 +102,7 @@ export const TABLA_PENSIONES: Record<number, Record<number, number>> = {
 
   // Año 2026 - Monto único para todas las edades
   2026: {
+    59: 10100.00,
     60: 10100.00,
     61: 10100.00,
     62: 10100.00,
@@ -128,6 +131,7 @@ export const TABLA_PENSIONES: Record<number, Record<number, number>> = {
 
   // Año 2027 - Monto único para todas las edades
   2027: {
+    59: 10900.00,
     60: 10900.00,
     61: 10900.00,
     62: 10900.00,
@@ -173,5 +177,5 @@ export function esAñoDisponible(año: number): boolean {
  * Obtiene el rango de edades soportado
  */
 export function getRangoEdades(): { min: number; max: number } {
-  return { min: 60, max: 83 };
+  return { min: 59, max: 83 };
 }

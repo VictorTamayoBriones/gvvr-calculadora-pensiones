@@ -197,3 +197,44 @@ export function parseISODate(dateString: string): Date {
   const [year, month, day] = dateString.split('-').map(Number)
   return new Date(year, month - 1, day)
 }
+
+/**
+ * Calcula el total de meses del contrato a partir de las semanas cotizadas.
+ *
+ * Regla C17 sección 6.1:
+ * - Si semanas > 448 → resolución en 63 semanas (441 días)
+ * - Si semanas ≤ 448 → resolución en (510 - semanas) × 7 días
+ * - Convertir días a meses redondeando al entero superior
+ *
+ * @param semanasCotizadas - Número de semanas cotizadas del cliente
+ * @param fechaInicioContrato - Fecha de inicio del contrato (ISO string)
+ * @returns Total de meses del contrato, o null si datos inválidos
+ */
+export function calcularTotalMesesDesdeSemanas(
+  semanasCotizadas: number,
+  fechaInicioContrato: string
+): number | null {
+  if (!semanasCotizadas || semanasCotizadas <= 0 || !fechaInicioContrato.trim()) {
+    return null
+  }
+
+  // Calcular días hasta resolución
+  const diasHastaResolucion = semanasCotizadas > 448
+    ? 441 // 63 semanas × 7 días
+    : (510 - semanasCotizadas) * 7
+
+  // Calcular fecha de resolución cruda
+  const inicio = new Date(fechaInicioContrato)
+  const resolucion = new Date(inicio)
+  resolucion.setDate(resolucion.getDate() + diasHastaResolucion)
+
+  // Normalizar al primer día del mes de resolución (sección 3.4)
+  resolucion.setDate(1)
+
+  // Calcular diferencia en meses (ambas fechas son día 1)
+  const totalMeses =
+    (resolucion.getFullYear() - inicio.getFullYear()) * 12 +
+    (resolucion.getMonth() - inicio.getMonth())
+
+  return totalMeses
+}

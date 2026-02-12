@@ -1,6 +1,4 @@
 import {
-  VALOR_REFERENCIA,
-  FACTOR_PENSION,
   FACTOR_PRESTAMO_MULTIPLICADOR,
   PRESTAMO_DESCUENTO,
   TIPO_FINANCIAMIENTO,
@@ -23,6 +21,7 @@ export interface ResultadosFinancieros {
   necesitaPrestamo: boolean
   etiquetaPrestamo: string
   mensaje: string
+  pensionMensual: number
 }
 
 // ---------------------------------------------------------------------------
@@ -30,15 +29,19 @@ export interface ResultadosFinancieros {
 // ---------------------------------------------------------------------------
 
 /**
- * Calcula el préstamo sugerido basado en el saldo AFORE
- * Solo se sugiere préstamo si el saldo es insuficiente
+ * Calcula el préstamo sugerido basado en el saldo AFORE, pensión mensual y costo total.
+ * Solo se sugiere préstamo si el saldo es insuficiente para cubrir el costo total.
  */
-export function calcularPrestamoSugerido(saldoAfore: number): number {
-  if (saldoAfore >= VALOR_REFERENCIA) {
+export function calcularPrestamoSugerido(
+  saldoAfore: number,
+  pensionMensual: number,
+  costoTotal: number
+): number {
+  if (costoTotal <= 0 || saldoAfore >= costoTotal) {
     return 0
   }
 
-  const prestamo = FACTOR_PENSION * FACTOR_PRESTAMO_MULTIPLICADOR - PRESTAMO_DESCUENTO
+  const prestamo = pensionMensual * FACTOR_PRESTAMO_MULTIPLICADOR - PRESTAMO_DESCUENTO
   return Math.max(0, prestamo)
 }
 
@@ -50,20 +53,20 @@ export function calcularTotalDisponible(saldoAfore: number, prestamo: number): n
 }
 
 /**
- * Determina si el total disponible es suficiente para cubrir el valor de referencia
+ * Determina si el total disponible es suficiente para cubrir el costo total
  */
-export function esSuficienteParaPension(totalDisponible: number): boolean {
-  return totalDisponible >= VALOR_REFERENCIA
+export function esSuficienteParaPension(totalDisponible: number, costoTotal: number): boolean {
+  return costoTotal <= 0 || totalDisponible >= costoTotal
 }
 
 /**
- * Calcula el faltante o sobrante comparado con el valor de referencia
+ * Calcula el faltante o sobrante comparado con el costo total
  */
-export function calcularDiferencia(totalDisponible: number): {
+export function calcularDiferencia(totalDisponible: number, costoTotal: number): {
   faltante: number
   sobrante: number
 } {
-  const diferencia = totalDisponible - VALOR_REFERENCIA
+  const diferencia = totalDisponible - costoTotal
 
   return {
     faltante: diferencia < 0 ? Math.abs(diferencia) : 0,
@@ -74,8 +77,11 @@ export function calcularDiferencia(totalDisponible: number): {
 /**
  * Determina el tipo de financiamiento basado en la capacidad financiera
  */
-export function determinarTipoFinanciamiento(totalDisponible: number): TipoFinanciamiento {
-  return totalDisponible >= VALOR_REFERENCIA
+export function determinarTipoFinanciamiento(
+  totalDisponible: number,
+  costoTotal: number
+): TipoFinanciamiento {
+  return costoTotal <= 0 || totalDisponible >= costoTotal
     ? TIPO_FINANCIAMIENTO.FINANCIADO_100
     : TIPO_FINANCIAMIENTO.FINANCIADO_1
 }
@@ -85,18 +91,20 @@ export function determinarTipoFinanciamiento(totalDisponible: number): TipoFinan
  */
 export function calcularResultadosFinancieros(
   saldoAfore: number,
-  modalidad: string
+  modalidad: string,
+  pensionMensual: number,
+  costoTotal: number
 ): ResultadosFinancieros {
-  const prestamoSugerido = calcularPrestamoSugerido(saldoAfore)
+  const prestamoSugerido = calcularPrestamoSugerido(saldoAfore, pensionMensual, costoTotal)
   const totalDisponible = calcularTotalDisponible(saldoAfore, prestamoSugerido)
-  const esSuficiente = esSuficienteParaPension(totalDisponible)
-  const { faltante, sobrante } = calcularDiferencia(totalDisponible)
-  const tipoFinanciamiento = determinarTipoFinanciamiento(totalDisponible)
+  const esSuficiente = esSuficienteParaPension(totalDisponible, costoTotal)
+  const { faltante, sobrante } = calcularDiferencia(totalDisponible, costoTotal)
+  const tipoFinanciamiento = determinarTipoFinanciamiento(totalDisponible, costoTotal)
   const necesitaPrestamo = prestamoSugerido > 0
 
   // Generar etiqueta si aplica (solo para REACTIVA FINANCIADO 100)
   const etiquetaPrestamo =
-    saldoAfore < VALOR_REFERENCIA && modalidad === "REACTIVA FINANCIADO 100"
+    costoTotal > 0 && saldoAfore < costoTotal && modalidad === "REACTIVA FINANCIADO 100"
       ? "NECESITA PRESTAMO FINANCIERO: "
       : ""
 
@@ -104,7 +112,7 @@ export function calcularResultadosFinancieros(
     saldoAfore,
     prestamoSugerido,
     totalDisponible,
-    montoMinimo: VALOR_REFERENCIA,
+    montoMinimo: costoTotal,
     esSuficiente,
     faltante,
     sobrante,
@@ -112,5 +120,6 @@ export function calcularResultadosFinancieros(
     necesitaPrestamo,
     etiquetaPrestamo,
     mensaje: MENSAJES_FINANCIAMIENTO[tipoFinanciamiento] ?? "",
+    pensionMensual,
   }
 }

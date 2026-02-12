@@ -12,6 +12,8 @@ import {
 export default function GeneralData() {
   const {
     generalData,
+    pensionMensual,
+    costoTotal,
     handleFieldChange,
     handleAutoUpdate,
     handleSubmit,
@@ -34,6 +36,8 @@ export default function GeneralData() {
         curp={generalData.curp}
         saldoAfore={generalData.saldoAfore}
         modalidad={generalData.modalidad}
+        pensionMensual={pensionMensual}
+        costoTotal={costoTotal}
         onChange={handleFieldChange}
         onValidationReady={registerModalidadValidation}
       />
@@ -42,6 +46,8 @@ export default function GeneralData() {
       <AnalisisFinancieroSection
         saldoAfore={generalData.saldoAfore}
         modalidad={generalData.modalidad}
+        pensionMensual={pensionMensual}
+        costoTotal={costoTotal}
       />
 
       {/* Acción */}

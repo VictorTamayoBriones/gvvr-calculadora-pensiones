@@ -1,11 +1,4 @@
 // ---------------------------------------------------------------------------
-// Business-logic constants
-// ---------------------------------------------------------------------------
-// TODO: In production, these values should come from a configuration API or sheet
-export const VALOR_REFERENCIA = 80_000   // K25 – placeholder
-export const FACTOR_PENSION   = 12_000   // F44 – placeholder
-
-// ---------------------------------------------------------------------------
 // Validation constants
 // ---------------------------------------------------------------------------
 export const MINIMO_SEMANAS_COTIZADAS = 430  // Minimum weeks required for eligibility
