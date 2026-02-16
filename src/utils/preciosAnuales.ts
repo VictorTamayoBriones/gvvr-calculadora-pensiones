@@ -3,6 +3,8 @@
  * Usadas por lineaTiempoRetoma.ts y calculoCostoTotal.ts.
  */
 
+import { getAdminConfig } from "@/contexts/AdminConfigContext"
+
 export interface PrecioAnual {
   anio: number;
   precio: number;
@@ -63,3 +65,19 @@ export const PAGO_MENSUAL_GESTORIA_RETOMA: Record<number, number> = {
   2027: 3950,
   2028: 4700,
 };
+
+// ---------------------------------------------------------------------------
+// Admin-configurable getters
+// ---------------------------------------------------------------------------
+export function getPreciosAnuales(): PrecioAnual[] {
+  return getAdminConfig().preciosAnuales
+}
+export function getPreciosPrimerMes(): PrecioPrimerMes[] {
+  return getAdminConfig().preciosPrimerMes
+}
+export function getGestoriaFija14Meses(): number {
+  return getAdminConfig().gestoriaFija14Meses
+}
+export function getPagoMensualGestoriaRetoma(): Record<number, number> {
+  return getAdminConfig().pagoMensualGestoriaRetoma
+}

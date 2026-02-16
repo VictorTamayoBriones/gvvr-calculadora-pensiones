@@ -1,3 +1,5 @@
+import { getAdminConfig } from "@/contexts/AdminConfigContext"
+
 /**
  * Tabla de Montos de Pensión Mensual
  *
@@ -159,18 +161,25 @@ export const TABLA_PENSIONES: Record<number, Record<number, number>> = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// Admin-configurable getter
+// ---------------------------------------------------------------------------
+export function getTablaPensiones(): Record<number, Record<number, number>> {
+  return getAdminConfig().tablaPensiones
+}
+
 /**
  * Obtiene los años disponibles en la tabla
  */
 export function getAñosDisponibles(): number[] {
-  return Object.keys(TABLA_PENSIONES).map(Number).sort();
+  return Object.keys(getTablaPensiones()).map(Number).sort();
 }
 
 /**
  * Verifica si un año está disponible en la tabla
  */
 export function esAñoDisponible(año: number): boolean {
-  return año in TABLA_PENSIONES;
+  return año in getTablaPensiones();
 }
 
 /**

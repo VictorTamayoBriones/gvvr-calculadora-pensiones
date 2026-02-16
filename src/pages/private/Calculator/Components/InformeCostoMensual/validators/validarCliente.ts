@@ -27,6 +27,14 @@ export function validarCliente({
   const advertencias: string[] = []
   const errores: string[] = []
 
+  // Validación de ley aplicable — solo Ley 73 es elegible
+  if (leyAplicable === "LEY_97") {
+    errores.push(
+      "Solo clientes bajo Ley 73 pueden acceder a este producto. " +
+      "Los clientes bajo Ley 97 no son elegibles para la recuperación de derechos pensionarios."
+    )
+  }
+
   // Validación de edad (Documento REGLAS_NEGOCIO_CLIENTE.md)
   if (edad < 55) {
     errores.push("El cliente debe tener al menos 55 años para participar en el programa")

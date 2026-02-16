@@ -1,3 +1,5 @@
+import { getAdminConfig } from "@/contexts/AdminConfigContext"
+
 // ---------------------------------------------------------------------------
 // Validation constants
 // ---------------------------------------------------------------------------
@@ -16,8 +18,38 @@ export const MESES_POR_ANIO = 12              // Conversion factor for months to
 // ---------------------------------------------------------------------------
 // Calculation constants
 // ---------------------------------------------------------------------------
-export const FACTOR_PRESTAMO_MULTIPLICADOR = 7.5
+export const FACTOR_PRESTAMO_MULTIPLICADOR = 9
 export const PRESTAMO_DESCUENTO = 10_000
+export const TASA_RETENCION_PRESTAMO = 0.30        // 30% de retención sobre pensión para pagar crédito
+export const MESES_RETENCION_PRESTAMO = 60          // 60 meses (5 años) de retención
+
+// ---------------------------------------------------------------------------
+// Admin-configurable getters (read from localStorage via AdminConfig)
+// ---------------------------------------------------------------------------
+export function getMinimoSemanasCotizadas(): number {
+  return getAdminConfig().minimoSemanasCotizadas
+}
+export function getMinimoSaldoAfore(): number {
+  return getAdminConfig().minimoSaldoAfore
+}
+export function getEdadMinimaMeses(): number {
+  return getAdminConfig().edadMinimaMeses
+}
+export function getEdadMaximaReactivaF100(): number {
+  return getAdminConfig().edadMaximaReactivaF100
+}
+export function getFactorPrestamoMultiplicador(): number {
+  return getAdminConfig().factorPrestamoMultiplicador
+}
+export function getPrestamoDescuento(): number {
+  return getAdminConfig().prestamoDescuento
+}
+export function getTasaRetencionPrestamo(): number {
+  return getAdminConfig().tasaRetencionPrestamo
+}
+export function getMesesRetencionPrestamo(): number {
+  return getAdminConfig().mesesRetencionPrestamo
+}
 
 // ---------------------------------------------------------------------------
 // Financing types

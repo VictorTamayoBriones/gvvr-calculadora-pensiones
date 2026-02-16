@@ -1,6 +1,6 @@
 import {
-  FACTOR_PRESTAMO_MULTIPLICADOR,
-  PRESTAMO_DESCUENTO,
+  getFactorPrestamoMultiplicador,
+  getPrestamoDescuento,
   TIPO_FINANCIAMIENTO,
   MENSAJES_FINANCIAMIENTO,
   type TipoFinanciamiento,
@@ -41,7 +41,7 @@ export function calcularPrestamoSugerido(
     return 0
   }
 
-  const prestamo = pensionMensual * FACTOR_PRESTAMO_MULTIPLICADOR - PRESTAMO_DESCUENTO
+  const prestamo = pensionMensual * getFactorPrestamoMultiplicador() - getPrestamoDescuento()
   return Math.max(0, prestamo)
 }
 

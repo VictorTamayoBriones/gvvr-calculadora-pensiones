@@ -146,6 +146,7 @@ export function useAutoCalcularFechaInicioContrato(
     generalData,
     setGeneralData,
     () => {
+      if (!fechaFirmaContrato) return {}
       const fechaInicio = calcularFechaInicioContrato(fechaFirmaContrato)
       if (fechaInicio === null) return null
       return { fechaInicioContrato: fechaInicio }

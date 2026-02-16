@@ -8,10 +8,10 @@
  */
 
 import {
-  PRECIOS_ANUALES,
-  PRECIOS_PRIMER_MES,
-  GESTORIA_FIJA_14_MESES,
-  PAGO_MENSUAL_GESTORIA_RETOMA,
+  getPreciosAnuales,
+  getPreciosPrimerMes,
+  getGestoriaFija14Meses,
+  getPagoMensualGestoriaRetoma,
 } from '@/utils/preciosAnuales';
 
 export interface ResultadoCostoTotal {
@@ -61,8 +61,9 @@ function calcularPrecioPrimerMes(): number {
   const hoy = new Date();
   const hoyMMDD = fechaToMMDD(hoy);
 
-  for (let i = PRECIOS_PRIMER_MES.length - 1; i >= 0; i--) {
-    const rango = PRECIOS_PRIMER_MES[i];
+  const preciosPrimerMes = getPreciosPrimerMes();
+  for (let i = preciosPrimerMes.length - 1; i >= 0; i--) {
+    const rango = preciosPrimerMes[i];
     if (estaDentroDeRango(hoyMMDD, rango.fechaInicio, rango.fechaFin)) {
       return rango.precio;
     }
@@ -75,7 +76,7 @@ function calcularPrecioPrimerMes(): number {
  * Calcula el precio de un mes según su año
  */
 function calcularPrecioMes(anio: number): number | null {
-  const precioAnual = PRECIOS_ANUALES.find((p) => p.anio === anio);
+  const precioAnual = getPreciosAnuales().find((p) => p.anio === anio);
   return precioAnual ? precioAnual.precio : null;
 }
 
@@ -147,10 +148,10 @@ export function calcularCostoTotalTramite(
   // Calculate gestoría
   let gestoria: number;
   if (duracionMeses === 14) {
-    gestoria = GESTORIA_FIJA_14_MESES;
+    gestoria = getGestoriaFija14Meses();
   } else {
     const añoInicio = fechaInicio.getFullYear();
-    const pagoMensualGestoria = PAGO_MENSUAL_GESTORIA_RETOMA[añoInicio];
+    const pagoMensualGestoria = getPagoMensualGestoriaRetoma()[añoInicio];
     if (!pagoMensualGestoria) {
       return null;
     }

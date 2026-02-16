@@ -4,8 +4,8 @@ import {
   MODALIDADES,
   CURP_LENGTH,
   SALDO_MINIMO_PARA_CALCULO,
-  EDAD_MINIMA_MESES,
-  EDAD_MAXIMA_REACTIVA_F100,
+  getEdadMinimaMeses,
+  getEdadMaximaReactivaF100,
   MESES_POR_ANIO,
   MENSAJES_VALIDACION,
   crearMensajeEdadMaxima,
@@ -58,14 +58,14 @@ export function validarCURP(curp: string): { valido: boolean; edadMeses: number 
  * Determina si el cliente tiene edad mínima requerida
  */
 export function cumpleEdadMinima(edadMeses: number): boolean {
-  return edadMeses >= EDAD_MINIMA_MESES
+  return edadMeses >= getEdadMinimaMeses()
 }
 
 /**
  * Determina si el cliente excede la edad máxima para REACTIVA F100
  */
 export function excededEdadMaximaReactivaF100(edadMeses: number): boolean {
-  return edadMeses > EDAD_MAXIMA_REACTIVA_F100
+  return edadMeses > getEdadMaximaReactivaF100()
 }
 
 /**

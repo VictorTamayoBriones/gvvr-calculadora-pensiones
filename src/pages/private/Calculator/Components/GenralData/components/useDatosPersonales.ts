@@ -32,7 +32,7 @@ type DatosPersonalesFields = Extract<
 
 interface UseDatosPersonalesProps {
   generalData: GeneralDataForm
-  onChange: (field: string, value: string) => void
+  onChange: (field: string, value: any) => void
   onAutoUpdate?: (updates: Partial<GeneralDataForm>) => void
   onValidationReady?: (validate: () => boolean) => void
 }
@@ -86,6 +86,13 @@ export function useDatosPersonales({
     setTouched((prev) => ({ ...prev, [name]: true }))
     setErrors((prev) => ({ ...prev, [name]: VALIDATORS[name](value) }))
   }, [])
+
+  const handleCheckboxChange = useCallback(
+    (checked: boolean) => {
+      onChange("clienteAunVigente", checked as any)
+    },
+    [onChange]
+  )
 
   // --- Wrapper para setGeneralData -----------------------------------------
   const setGeneralDataWrapper = useCallback(
@@ -176,5 +183,6 @@ export function useDatosPersonales({
     handleChange,
     handleBlur,
     validate,
+    handleCheckboxChange,
   }
 }

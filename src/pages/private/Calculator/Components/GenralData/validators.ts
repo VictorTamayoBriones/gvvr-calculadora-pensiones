@@ -1,5 +1,5 @@
 import { verifyCURP } from "@/helpers/verifyCURP"
-import { MINIMO_SEMANAS_COTIZADAS, MINIMO_SALDO_AFORE } from "./constants"
+import { getMinimoSemanasCotizadas, getMinimoSaldoAfore } from "./constants"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -40,8 +40,8 @@ export const VALIDATORS: Record<FormFields, (v: string) => string> = {
     if (v.trim() === "") return "Este campo es obligatorio."
     const n = Number(v)
     if (isNaN(n) || n <= 0) return "Debe ser un número mayor a 0."
-    if (n < MINIMO_SEMANAS_COTIZADAS) {
-      return `SEMANAS INSUFICIENTES - El mínimo de semanas permitidas para este producto es de ${MINIMO_SEMANAS_COTIZADAS}, de lo contrario se debe ofrecer otras alternativas.`
+    if (n < getMinimoSemanasCotizadas()) {
+      return `SEMANAS INSUFICIENTES - El mínimo de semanas permitidas para este producto es de ${getMinimoSemanasCotizadas()}, de lo contrario se debe ofrecer otras alternativas.`
     }
     return ""
   },
@@ -50,8 +50,8 @@ export const VALIDATORS: Record<FormFields, (v: string) => string> = {
     if (v.trim() === "") return "Este campo es obligatorio."
     const valor = Number(v)
     if (isNaN(valor) || valor < 0) return "Debe ser un valor monetario ≥ 0."
-    if (valor < MINIMO_SALDO_AFORE) {
-      return `MONTO EN AFORE INSUFICIENTE - El monto mínimo para este producto es de $${MINIMO_SALDO_AFORE.toLocaleString('es-MX')}, el cual se toma de las subcuentas de: SAR 92, RETIRO 97, VIVIENDA`
+    if (valor < getMinimoSaldoAfore()) {
+      return `MONTO EN AFORE INSUFICIENTE - El monto mínimo para este producto es de $${getMinimoSaldoAfore().toLocaleString('es-MX')}, el cual se toma de las subcuentas de: SAR 92, RETIRO 97, VIVIENDA`
     }
     return ""
   },

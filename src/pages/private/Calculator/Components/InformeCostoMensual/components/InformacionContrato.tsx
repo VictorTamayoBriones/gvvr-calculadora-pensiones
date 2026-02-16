@@ -3,6 +3,7 @@ import { Field, FieldContent, FieldGroup, FieldLabel } from '@/components/ui/fie
 import { Input } from '@/components/ui/input';
 import type { GeneralDataForm } from '@/models';
 import { ValidationMessages } from './ValidationMessages';
+import { FirstOfMonthPicker } from '@/components/custom/FirstOfMonthPicker';
 
 interface InformacionContratoProps {
   generalData: GeneralDataForm;
@@ -29,17 +30,12 @@ export function InformacionContrato({
       <CardContent>
         <FieldGroup>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel htmlFor="fechaFirmaContrato">Fecha de firma del contrato</FieldLabel>
-              <FieldContent>
-                <Input
-                  id="fechaFirmaContrato"
-                  type="date"
-                  value={generalData.fechaFirmaContrato}
-                  onChange={(e) => onFechaFirmaChange(e.target.value)}
-                />
-              </FieldContent>
-            </Field>
+            <FirstOfMonthPicker
+              id="fechaFirmaContrato"
+              label="Fecha de firma del contrato"
+              value={generalData.fechaFirmaContrato}
+              onChange={onFechaFirmaChange}
+            />
 
             <Field>
               <FieldLabel htmlFor="fechaInicioContrato">Fecha de inicio</FieldLabel>
@@ -53,17 +49,12 @@ export function InformacionContrato({
               </FieldContent>
             </Field>
 
-            <Field>
-              <FieldLabel htmlFor="fechaFinContrato">Fecha de fin</FieldLabel>
-              <FieldContent>
-                <Input
-                  id="fechaFinContrato"
-                  type="date"
-                  value={generalData.fechaFinContrato}
-                  onChange={(e) => onFechaFinChange(e.target.value)}
-                />
-              </FieldContent>
-            </Field>
+            <FirstOfMonthPicker
+              id="fechaFinContrato"
+              label="Fecha de fin"
+              value={generalData.fechaFinContrato}
+              onChange={onFechaFinChange}
+            />
 
             <Field>
               <FieldLabel htmlFor="totalMeses">Total de meses (mínimo 14)</FieldLabel>

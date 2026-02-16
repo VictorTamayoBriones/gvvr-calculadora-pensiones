@@ -13,6 +13,8 @@ interface PresupuestoInicialProps {
     info: string[];
   };
   onPrestamoFinancieroChange: (value: string) => void;
+  mensajeAplicabilidad?: string;
+  saldoAFavor?: number;
 }
 
 /**
@@ -22,7 +24,9 @@ interface PresupuestoInicialProps {
 export function PresupuestoInicial({
   generalData,
   validaciones,
-  onPrestamoFinancieroChange
+  onPrestamoFinancieroChange,
+  mensajeAplicabilidad,
+  saldoAFavor,
 }: PresupuestoInicialProps) {
   // Determinar si la modalidad usa AFORE
   const usaAfore = usaAforeEnModalidad(generalData.modalidad);
@@ -88,7 +92,36 @@ export function PresupuestoInicial({
                 />
               </FieldContent>
             </Field>
+
+            {/* Saldo a favor — solo visible si > 0 */}
+            {saldoAFavor != null && saldoAFavor > 0 && (
+              <Field>
+                <FieldLabel htmlFor="saldoAFavor">
+                  Saldo a favor
+                </FieldLabel>
+                <FieldContent>
+                  <Input
+                    id="saldoAFavor"
+                    type="text"
+                    value={`$${saldoAFavor.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    readOnly
+                    className="bg-green-50 dark:bg-green-950/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200"
+                  />
+                </FieldContent>
+              </Field>
+            )}
           </div>
+
+          {/* Mensaje de aplicabilidad */}
+          {mensajeAplicabilidad && (
+            <div className={`mt-3 p-3 rounded-lg border text-sm font-medium ${
+              mensajeAplicabilidad.includes('SOLO APLICA')
+                ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200'
+                : 'bg-green-50 dark:bg-green-950/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200'
+            }`}>
+              {mensajeAplicabilidad}
+            </div>
+          )}
 
           {/* Validaciones del presupuesto */}
           <ValidationMessages

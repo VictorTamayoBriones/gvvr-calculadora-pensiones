@@ -1,4 +1,4 @@
-import { TABLA_PENSIONES, getAñosDisponibles, getRangoEdades } from '@/utils/tablaPensiones';
+import { getTablaPensiones, getAñosDisponibles, getRangoEdades } from '@/utils/tablaPensiones';
 
 /**
  * Tipos para el resultado del cálculo
@@ -72,7 +72,7 @@ function buscarMontoPension(edad: number, año: number): { monto: number; advert
   const rangoEdades = getRangoEdades();
 
   // Validar que el año exista
-  if (!TABLA_PENSIONES[año]) {
+  if (!getTablaPensiones()[año]) {
     throw new Error(`Año ${año} no disponible en tabla de montos`);
   }
 
@@ -92,7 +92,7 @@ function buscarMontoPension(edad: number, año: number): { monto: number; advert
   }
 
   // Buscar monto
-  const monto = TABLA_PENSIONES[año][edadParaBusqueda];
+  const monto = getTablaPensiones()[año][edadParaBusqueda];
 
   if (monto === null || monto === undefined) {
     throw new Error(`Monto no definido para edad ${edadParaBusqueda} y año ${año}`);
@@ -227,7 +227,7 @@ export function calcularMontoPension(
     const añoPension = fin.getFullYear();
 
     // RN-006: Validar que el año esté en la tabla (BLOQUEANTE)
-    if (!TABLA_PENSIONES[añoPension]) {
+    if (!getTablaPensiones()[añoPension]) {
       const añosDisponibles = getAñosDisponibles();
       return {
         success: false,

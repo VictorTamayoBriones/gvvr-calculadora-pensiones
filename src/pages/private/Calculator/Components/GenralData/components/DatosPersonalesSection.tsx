@@ -2,6 +2,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { FieldGroup } from "@/components/ui/field"
 import { FormInput } from "./FormInput"
 import { useDatosPersonales } from "./useDatosPersonales"
+import { FirstOfMonthPicker } from "@/components/custom/FirstOfMonthPicker"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 import type { GeneralDataForm } from "@/models"
 
 // ---------------------------------------------------------------------------
@@ -9,7 +12,7 @@ import type { GeneralDataForm } from "@/models"
 // ---------------------------------------------------------------------------
 interface DatosPersonalesSectionProps {
   generalData: GeneralDataForm
-  onChange: (field: string, value: string) => void
+  onChange: (field: string, value: any) => void
   onAutoUpdate?: (updates: Partial<GeneralDataForm>) => void
   onValidationReady?: (validate: () => boolean) => void
 }
@@ -23,7 +26,7 @@ export function DatosPersonalesSection({
   onAutoUpdate,
   onValidationReady,
 }: DatosPersonalesSectionProps) {
-  const { form, errors, touched, handleChange, handleBlur } = useDatosPersonales({
+  const { form, errors, touched, handleChange, handleBlur, handleCheckboxChange } = useDatosPersonales({
     generalData,
     onChange,
     onAutoUpdate,
@@ -152,17 +155,28 @@ export function DatosPersonalesSection({
               }}
             />
 
-            <FormInput
-              id="fechaInicioContrato"
-              name="fechaInicioContrato"
-              label="Fecha Inicio Contrato"
-              type="date"
-              value={form.fechaInicioContrato}
-              error={errors.fechaInicioContrato}
-              touched={touched.fechaInicioContrato}
-              onChange={handleChange}
-              onBlur={handleBlur}
+            <div className="relative">
+              <FirstOfMonthPicker
+                id="fechaInicioContrato"
+                label="Fecha Inicio Contrato"
+                value={form.fechaInicioContrato}
+                onChange={(newValue: string) =>
+                  handleChange({
+                    target: { name: "fechaInicioContrato", value: newValue },
+                  } as unknown as React.ChangeEvent<HTMLInputElement>)
+                }
+                error={errors.fechaInicioContrato}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 mt-4">
+            <Checkbox
+              id="clienteAunVigente"
+              checked={form.clienteAunVigente}
+              onCheckedChange={handleCheckboxChange}
             />
+            <Label htmlFor="clienteAunVigente" className="cursor-pointer">Cliente aún vigente</Label>
           </div>
         </FieldGroup>
       </CardContent>

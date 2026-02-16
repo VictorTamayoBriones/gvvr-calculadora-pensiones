@@ -12,7 +12,7 @@ export default function PrivateLayout() {
           <SidebarTrigger />
           <Separator orientation="vertical" style={{ height: "100%" }} />
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
+        <div className="flex flex-1 flex-col gap-4 p-4 overflow-x-hidden">
           <Outlet />
         </div>
       </SidebarInset>

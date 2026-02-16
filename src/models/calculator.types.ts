@@ -25,7 +25,7 @@ export type Modalidad = typeof MODALIDADES[keyof typeof MODALIDADES]
  */
 export function usaAforeEnModalidad(modalidad: Modalidad): boolean {
   return modalidad === MODALIDADES.FINANCIADO_1 ||
-         modalidad === MODALIDADES.REACTIVA_TRADICIONAL
+    modalidad === MODALIDADES.REACTIVA_TRADICIONAL
 }
 
 // ---------------------------------------------------------------------------
@@ -53,6 +53,7 @@ export interface GeneralDataForm {
   semanasAlFinal: string
   prestamoFinanciero: string
   montoTotalInvertir: string
+  clienteAunVigente: boolean
 }
 
 // ---------------------------------------------------------------------------

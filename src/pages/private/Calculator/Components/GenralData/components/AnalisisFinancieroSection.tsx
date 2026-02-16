@@ -8,8 +8,8 @@ import { DetalleCalculoPrestamo } from "./DetalleCalculoPrestamo"
 import { useAnalisisFinanciero } from "./useAnalisisFinanciero"
 import type { Modalidad } from "@/models"
 import {
-  FACTOR_PRESTAMO_MULTIPLICADOR,
-  PRESTAMO_DESCUENTO,
+  getFactorPrestamoMultiplicador,
+  getPrestamoDescuento,
 } from "../constants"
 
 // ---------------------------------------------------------------------------
@@ -89,8 +89,8 @@ export function AnalisisFinancieroSection({
             <Separator className="my-4" />
             <DetalleCalculoPrestamo
               factorPension={resultados.pensionMensual}
-              factorMultiplicador={FACTOR_PRESTAMO_MULTIPLICADOR}
-              descuento={PRESTAMO_DESCUENTO}
+              factorMultiplicador={getFactorPrestamoMultiplicador()}
+              descuento={getPrestamoDescuento()}
               prestamoSugerido={resultados.prestamoSugerido}
             />
           </>

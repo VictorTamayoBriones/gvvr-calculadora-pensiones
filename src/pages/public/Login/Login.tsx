@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { useLogin } from "./useLogin"
+import LOGO from "@/assets/retirate_bien.webp"
 
 export default function Login() {
   const { user, setUser, password, setPassword, handleSubmit } = useLogin()
@@ -10,6 +11,11 @@ export default function Login() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <Card className="w-full max-w-md p-8 shadow-lg">
+
+        <div className="flex justify-center">
+          <img src={LOGO} alt="Logo" className="w-24 h-24" />
+        </div>
+
         <div className="space-y-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold">Iniciar Sesión</h1>

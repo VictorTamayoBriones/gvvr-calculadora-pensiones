@@ -3,7 +3,7 @@ import PrivateRoute from "@/guards/PrivateRoute"
 import { RequireCalculatorData } from "@/guards/RequireCalculatorData"
 import PrivateLayout from "@/layouts/PrivateLayout"
 import { Login } from "@PublicPages";
-import { Dashboard, Calculator } from "@PrivatePages";
+import { Dashboard, Calculator, Admin } from "@PrivatePages";
 import Cotizacion from "@/pages/private/Calculator/Components/Cotizacion/Cotizacion";
 import GeneralData from "@/pages/private/Calculator/Components/GenralData/GeneralData";
 import InformeCostoMensual from "@/pages/private/Calculator/Components/InformeCostoMensual/InformeCostoMensual";
@@ -16,6 +16,7 @@ export default function AppRoutes() {
       <Route element={<PrivateRoute />}>
         <Route element={<PrivateLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="administracion" element={<Admin />} />
           <Route element={<Calculator/>} >
             <Route path="/calculadora/datosGenerales" element={<GeneralData/>} />
             <Route

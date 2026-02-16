@@ -8,20 +8,20 @@
  */
 
 import {
-  PRECIOS_ANUALES,
-  PRECIOS_PRIMER_MES,
-  GESTORIA_FIJA_14_MESES,
-  PAGO_MENSUAL_GESTORIA_RETOMA,
+  getPreciosAnuales,
+  getPreciosPrimerMes,
+  getGestoriaFija14Meses,
+  getPagoMensualGestoriaRetoma,
   type PrecioAnual,
   type PrecioPrimerMes,
 } from '@/utils/preciosAnuales';
 
 // Re-export so existing consumers don't break
 export {
-  PRECIOS_ANUALES,
-  PRECIOS_PRIMER_MES,
-  GESTORIA_FIJA_14_MESES,
-  PAGO_MENSUAL_GESTORIA_RETOMA,
+  getPreciosAnuales,
+  getPreciosPrimerMes,
+  getGestoriaFija14Meses,
+  getPagoMensualGestoriaRetoma,
   type PrecioAnual,
   type PrecioPrimerMes,
 };
@@ -188,8 +188,9 @@ export function calcularPrecioPrimerMes(): number {
   const hoyMMDD = fechaToMMDD(hoy);
 
   // Evaluar en orden DESCENDENTE para evitar bug de Excel
-  for (let i = PRECIOS_PRIMER_MES.length - 1; i >= 0; i--) {
-    const rango = PRECIOS_PRIMER_MES[i];
+  const preciosPrimerMes = getPreciosPrimerMes();
+  for (let i = preciosPrimerMes.length - 1; i >= 0; i--) {
+    const rango = preciosPrimerMes[i];
     if (estaDentroDeRango(hoyMMDD, rango.fechaInicio, rango.fechaFin)) {
       return rango.precio;
     }
@@ -204,7 +205,7 @@ export function calcularPrecioPrimerMes(): number {
  * RN-RETOMA-002
  */
 export function calcularPrecioMes(anio: number): number | null {
-  const precioAnual = PRECIOS_ANUALES.find((p) => p.anio === anio);
+  const precioAnual = getPreciosAnuales().find((p) => p.anio === anio);
   return precioAnual ? precioAnual.precio : null;
 }
 
@@ -327,11 +328,11 @@ export function calcularLineaTiempo(input: LineaTiempoInput): LineaTiempoOutput 
 
     if (duracionMeses === 14) {
       // Caso estándar: Gestoría fija
-      montoGestoria = GESTORIA_FIJA_14_MESES;
+      montoGestoria = getGestoriaFija14Meses();
     } else {
       // Caso variable: Pago mensual × duración
       const añoInicio = fechaAlta.getFullYear();
-      const pagoMensualGestoria = PAGO_MENSUAL_GESTORIA_RETOMA[añoInicio];
+      const pagoMensualGestoria = getPagoMensualGestoriaRetoma()[añoInicio];
 
       if (!pagoMensualGestoria) {
         return {

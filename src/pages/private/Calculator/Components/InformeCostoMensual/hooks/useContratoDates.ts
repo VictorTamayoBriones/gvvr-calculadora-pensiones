@@ -51,6 +51,11 @@ export function useContratoDates(
         totalMeses: totalMesesNum.toString(),
         semanasAlFinal: semanasFinales.toString()
       });
+    } else {
+      // Si no se puede calcular meses (falta fecha inicio), solo actualizamos la fecha fin
+      updateGeneralData({
+        fechaFinContrato: fechaFin
+      });
     }
   }, [updateGeneralData, generalData.fechaInicioContrato, generalData.semanasCotizadas]);
 

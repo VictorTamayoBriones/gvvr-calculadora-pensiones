@@ -4,6 +4,14 @@ import { useContratoDates } from './hooks/useContratoDates';
 import { useMontoTotal } from './hooks/useMontoTotal';
 import { useVigenciaDerechos } from './hooks/useVigenciaDerechos';
 import { validarCliente, validarContrato, validarPresupuesto } from './validators';
+import { calcularMontoPension } from '@/utils/calculoMontoPension';
+import { calcularCostoTotalTramite } from '@/utils/calculoCostoTotal';
+import {
+  calcularImpactoPrestamo,
+  calcularSaldoAFavor,
+  obtenerMensajeAplicabilidad,
+  type ResultadoImpactoPrestamo,
+} from './calculoImpactoPrestamo';
 
 /**
  * Hook orquestador del Informe de Costo Mensual.
@@ -72,6 +80,45 @@ export function useInformeCostoMensual() {
     ]
   );
 
+  // Impacto del préstamo financiero sobre la pensión
+  const impactoPrestamo = useMemo((): ResultadoImpactoPrestamo => {
+    // Calcular pensión mensual
+    const resultadoPension =
+      generalData.fechaNacimiento && generalData.curp &&
+      generalData.fechaInicioContrato && generalData.fechaFinContrato
+        ? calcularMontoPension(
+            generalData.fechaNacimiento,
+            generalData.curp,
+            generalData.fechaInicioContrato,
+            generalData.fechaFinContrato
+          )
+        : null;
+
+    const pensionMensual = resultadoPension?.success ? (resultadoPension.montoPension ?? 0) : 0;
+    const prestamo = parseFloat(generalData.prestamoFinanciero) || 0;
+
+    // Calcular costo total del trámite
+    const resultadoCosto = calcularCostoTotalTramite(
+      generalData.fechaInicioContrato,
+      generalData.fechaFinContrato
+    );
+    const costoTotal = resultadoCosto?.costoTotal ?? 0;
+    const montoTotal = parseFloat(generalData.montoTotalInvertir) || 0;
+
+    return {
+      impactoPension: calcularImpactoPrestamo(pensionMensual, prestamo),
+      saldoAFavor: calcularSaldoAFavor(montoTotal, costoTotal),
+      mensajeAplicabilidad: obtenerMensajeAplicabilidad(montoTotal, costoTotal),
+    };
+  }, [
+    generalData.curp,
+    generalData.fechaNacimiento,
+    generalData.fechaInicioContrato,
+    generalData.fechaFinContrato,
+    generalData.prestamoFinanciero,
+    generalData.montoTotalInvertir,
+  ]);
+
   return {
     generalData,
     updateGeneralData,
@@ -81,6 +128,7 @@ export function useInformeCostoMensual() {
     validacionesCliente,
     validacionesContrato,
     validacionesPresupuesto,
+    impactoPrestamo,
     handleFechaFirmaChange,
     handleFechaFinChange,
   };

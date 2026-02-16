@@ -45,6 +45,7 @@ const initialGeneralData: GeneralDataForm = {
   semanasAlFinal: "",
   prestamoFinanciero: "",
   montoTotalInvertir: "",
+  clienteAunVigente: false,
 }
 
 // ---------------------------------------------------------------------------

@@ -35,7 +35,7 @@ export function useGeneralData() {
 
   // --- Handler de cambio de campo (Flujo unidireccional) ------------------
   const handleFieldChange = useCallback(
-    (field: string, value: string) => {
+    (field: string, value: any) => {
       updateGeneralData({ [field]: value })
     },
     [updateGeneralData]

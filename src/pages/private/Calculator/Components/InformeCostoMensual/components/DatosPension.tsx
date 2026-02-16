@@ -1,16 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field, FieldContent, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, Info, CreditCard } from 'lucide-react';
 import type { GeneralDataForm } from '@/models';
 import { calcularMontoPension } from '@/utils/calculoMontoPension';
 import { useMemo } from 'react';
+import type { ImpactoPension } from '../calculoImpactoPrestamo';
 
 interface DatosPensionProps {
   generalData: GeneralDataForm;
+  impactoPrestamo?: ImpactoPension;
 }
 
-export function DatosPension({ generalData }: DatosPensionProps) {
+export function DatosPension({ generalData, impactoPrestamo }: DatosPensionProps) {
   // Calcular mes y año de ingreso de pensión desde fechaInicioContrato
   const calcularIngresoPension = () => {
     if (!generalData.fechaInicioContrato) {
@@ -182,6 +184,41 @@ export function DatosPension({ generalData }: DatosPensionProps) {
                   <p className="text-xs font-medium">{error}</p>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Impacto del préstamo financiero */}
+          {impactoPrestamo?.tieneDescuento && resultadoPension?.success && (
+            <div className="mt-4 p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-300 dark:border-orange-700">
+              <div className="flex items-start gap-3">
+                <CreditCard className="h-5 w-5 mt-0.5 shrink-0 text-orange-600 dark:text-orange-400" />
+                <div className="space-y-1 text-sm text-orange-900 dark:text-orange-100">
+                  <p className="font-medium">Impacto del préstamo financiero:</p>
+                  <ul className="space-y-0.5 text-xs">
+                    <li>
+                      Descuento mensual ({(impactoPrestamo.tasaRetencion * 100).toFixed(0)}%): {' '}
+                      <span className="font-semibold text-red-700 dark:text-red-400">
+                        −${impactoPrestamo.descuentoMensual.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </li>
+                    <li>
+                      Pensión temporal (meses 1-{impactoPrestamo.mesesRetencion}): {' '}
+                      <span className="font-semibold">
+                        ${impactoPrestamo.pensionTemporal.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </li>
+                    <li>
+                      Pensión plena (mes {impactoPrestamo.mesesRetencion + 1}+): {' '}
+                      <span className="font-semibold text-green-700 dark:text-green-400">
+                        ${impactoPrestamo.pensionPlena.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </li>
+                  </ul>
+                  <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
+                    El descuento se aplica durante {impactoPrestamo.mesesRetencion} meses ({impactoPrestamo.mesesRetencion / 12} años) para cubrir el crédito financiero.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
