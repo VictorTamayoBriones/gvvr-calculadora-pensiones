@@ -19,7 +19,6 @@ export default function InformeCostoMensual() {
     validacionesPresupuesto,
     impactoPrestamo,
     handleFechaFirmaChange,
-    handleFechaFinChange
   } = useInformeCostoMensual();
 
   return (
@@ -47,7 +46,6 @@ export default function InformeCostoMensual() {
           generalData={generalData}
           validaciones={validacionesContrato}
           onFechaFirmaChange={handleFechaFirmaChange}
-          onFechaFinChange={handleFechaFinChange}
         />
 
         <PeriodoEjercicio generalData={generalData} />

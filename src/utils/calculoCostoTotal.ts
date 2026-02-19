@@ -11,7 +11,6 @@ import {
   getPreciosAnuales,
   getPreciosPrimerMes,
   getGestoriaFija14Meses,
-  getPagoMensualGestoriaRetoma,
 } from '@/utils/preciosAnuales';
 
 export interface ResultadoCostoTotal {
@@ -145,18 +144,8 @@ export function calcularCostoTotalTramite(
     totalPagos += precio;
   }
 
-  // Calculate gestoría
-  let gestoria: number;
-  if (duracionMeses === 14) {
-    gestoria = getGestoriaFija14Meses();
-  } else {
-    const añoInicio = fechaInicio.getFullYear();
-    const pagoMensualGestoria = getPagoMensualGestoriaRetoma()[añoInicio];
-    if (!pagoMensualGestoria) {
-      return null;
-    }
-    gestoria = pagoMensualGestoria * duracionMeses;
-  }
+  // Calculate gestoría - costo fijo para todos los contratos
+  const gestoria = getGestoriaFija14Meses();
 
   return {
     costoTotal: totalPagos + gestoria,

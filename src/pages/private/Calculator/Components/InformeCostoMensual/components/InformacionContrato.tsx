@@ -12,14 +12,12 @@ interface InformacionContratoProps {
     advertencias: string[];
   };
   onFechaFirmaChange: (fecha: string) => void;
-  onFechaFinChange: (fecha: string) => void;
 }
 
 export function InformacionContrato({
   generalData,
   validaciones,
   onFechaFirmaChange,
-  onFechaFinChange
 }: InformacionContratoProps) {
   return (
     <Card>
@@ -49,12 +47,18 @@ export function InformacionContrato({
               </FieldContent>
             </Field>
 
-            <FirstOfMonthPicker
-              id="fechaFinContrato"
-              label="Fecha de fin"
-              value={generalData.fechaFinContrato}
-              onChange={onFechaFinChange}
-            />
+            <Field>
+              <FieldLabel htmlFor="fechaFinContrato">Fecha de fin</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="fechaFinContrato"
+                  type="date"
+                  value={generalData.fechaFinContrato}
+                  readOnly
+                  className="bg-muted"
+                />
+              </FieldContent>
+            </Field>
 
             <Field>
               <FieldLabel htmlFor="totalMeses">Total de meses (mínimo 14)</FieldLabel>

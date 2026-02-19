@@ -322,38 +322,8 @@ export function calcularLineaTiempo(input: LineaTiempoInput): LineaTiempoOutput 
     });
 
     // Fila GESTORÍA
-    // RN-GEST-001: Si duración = 14 meses, usar tarifa fija
-    // RN-GEST-002: Si duración ≠ 14 meses, calcular por tabla
-    let montoGestoria: number;
-
-    if (duracionMeses === 14) {
-      // Caso estándar: Gestoría fija
-      montoGestoria = getGestoriaFija14Meses();
-    } else {
-      // Caso variable: Pago mensual × duración
-      const añoInicio = fechaAlta.getFullYear();
-      const pagoMensualGestoria = getPagoMensualGestoriaRetoma()[añoInicio];
-
-      if (!pagoMensualGestoria) {
-        return {
-          success: false,
-          errores: [
-            `No hay pago mensual de gestoría configurado para el año ${añoInicio}. ` +
-              `Configure el pago mensual o ajuste las fechas del contrato.`,
-          ],
-        };
-      }
-
-      montoGestoria = pagoMensualGestoria * duracionMeses;
-
-      // Advertencia si el monto es muy alto
-      if (montoGestoria > 100000) {
-        advertencias.push(
-          `Gestoría muy alta ($${montoGestoria.toLocaleString('es-MX')}). ` +
-            `Esto es normal para contratos largos (${duracionMeses} meses × $${pagoMensualGestoria.toLocaleString('es-MX')}/mes).`
-        );
-      }
-    }
+    // Costo fijo de gestoría para todos los contratos
+    const montoGestoria = getGestoriaFija14Meses();
 
     filas.push({
       numero: 0,

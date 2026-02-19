@@ -56,15 +56,7 @@ export function validarContrato({
   }
 
   // 1. VALIDACIONES DE FECHA DE FIRMA
-  if (fechaFirmaContrato) {
-    const fechaFirma = parseISODate(fechaFirmaContrato)
-    const hoy = new Date()
-
-    // No puede ser futura
-    if (fechaFirma > hoy) {
-      errores.push("La fecha de firma del contrato no puede ser futura")
-    }
-  }
+  // La fecha de firma puede ser pasada o futura
 
   // 2. VALIDACIONES DE FECHA DE INICIO
   if (fechaInicioContrato) {

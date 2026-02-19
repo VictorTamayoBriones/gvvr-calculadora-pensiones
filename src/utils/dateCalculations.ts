@@ -49,19 +49,35 @@ export function extraerDatosNacimientoDesdeCURP(curp: string): {
 }
 
 /**
- * Calcula la fecha sin vigencia de derechos (fecha de baja + 5 años)
+ * Calcula la fecha de vencimiento de derechos según la fórmula del IMSS:
+ * 1. Periodo de conservación = semanasCotizadas / 4 (en semanas)
+ * 2. Conversión a días = periodoConservación × 7
+ * 3. Tope máximo = min(días, 1716)
+ * 4. Fecha vencimiento = fechaBaja + días definitivos
  */
-export function calcularSinVigenciaDerechos(fechaBaja: string): string | null {
-  if (!fechaBaja.trim()) {
+const TOPE_MAXIMO_DIAS_CONSERVACION = 1716
+
+export function calcularSinVigenciaDerechos(fechaBaja: string, semanasCotizadas: number): string | null {
+  if (!fechaBaja.trim() || !semanasCotizadas || semanasCotizadas <= 0) {
     return null
   }
 
   try {
-    const baja = new Date(fechaBaja)
-    const sinVigencia = new Date(baja)
-    sinVigencia.setFullYear(sinVigencia.getFullYear() + 5)
+    // Paso 2-3: Calcular días de conservación con tope
+    const periodoConservacionSemanas = semanasCotizadas / 4
+    const diasConservacion = Math.floor(periodoConservacionSemanas * 7)
+    const diasDefinitivos = Math.min(diasConservacion, TOPE_MAXIMO_DIAS_CONSERVACION)
 
-    return sinVigencia.toISOString().split("T")[0]
+    // Paso 4: Sumar días a la fecha de baja (parsing sin timezone)
+    const [anio, mes, dia] = fechaBaja.split('-').map(Number)
+    const sinVigencia = new Date(anio, mes - 1, dia)
+    sinVigencia.setDate(sinVigencia.getDate() + diasDefinitivos)
+
+    // Formatear manualmente para evitar conversión UTC
+    const yyyy = sinVigencia.getFullYear()
+    const mm = String(sinVigencia.getMonth() + 1).padStart(2, '0')
+    const dd = String(sinVigencia.getDate()).padStart(2, '0')
+    return `${yyyy}-${mm}-${dd}`
   } catch {
     return null
   }
@@ -141,13 +157,16 @@ export function calcularDatosFinContrato(
   }
 
   try {
-    // Calcular fecha de fin: fecha_inicio + total_meses
-    const inicio = new Date(fechaInicio)
-    const fin = new Date(inicio)
-    fin.setMonth(fin.getMonth() + totalMeses)
+    // Parsear sin timezone y sumar meses
+    const [anio, mes, dia] = fechaInicio.split('-').map(Number)
+    const fin = new Date(anio, mes - 1 + totalMeses, dia)
     fin.setDate(1) // Asegurar que sea día 1
 
-    const fechaFin = fin.toISOString().split("T")[0]
+    // Formatear manualmente para evitar conversión UTC en toISOString
+    const yyyy = fin.getFullYear()
+    const mm = String(fin.getMonth() + 1).padStart(2, '0')
+    const dd = String(fin.getDate()).padStart(2, '0')
+    const fechaFin = `${yyyy}-${mm}-${dd}`
 
     // Calcular semanas al final: semanas_iniciales + (total_meses × 4)
     const semanasFinales = semanasIniciales + totalMeses * 4
@@ -172,7 +191,7 @@ export function calcularTotalMeses(fechaInicio: string, fechaFin: string): numbe
     const fin = new Date(fechaFin)
 
     const meses = (fin.getFullYear() - inicio.getFullYear()) * 12
-                 + (fin.getMonth() - inicio.getMonth())
+      + (fin.getMonth() - inicio.getMonth())
 
     return meses
   } catch {
@@ -223,18 +242,24 @@ export function calcularTotalMesesDesdeSemanas(
     ? 441 // 63 semanas × 7 días
     : (510 - semanasCotizadas) * 7
 
-  // Calcular fecha de resolución cruda
-  const inicio = new Date(fechaInicioContrato)
-  const resolucion = new Date(inicio)
-  resolucion.setDate(resolucion.getDate() + diasHastaResolucion)
+  // Parsear fecha sin timezone para evitar desplazamiento UTC
+  const [anioI, mesI, diaI] = fechaInicioContrato.split('-').map(Number)
+  const inicio = new Date(anioI, mesI - 1, diaI)
 
-  // Normalizar al primer día del mes de resolución (sección 3.4)
-  resolucion.setDate(1)
+  // Calcular fecha base sumando días (JS desborda el día automáticamente al mes correcto)
+  const fechaBase = new Date(anioI, mesI - 1, diaI + diasHastaResolucion)
 
-  // Calcular diferencia en meses (ambas fechas son día 1)
+  // Redondear al día 1 según quincena:
+  // - Día ≤ 15 → primer día del mismo mes
+  // - Día ≥ 16 → primer día del mes siguiente
+  const diaBase = fechaBase.getDate()
+  const mesFin = diaBase >= 16 ? fechaBase.getMonth() + 1 : fechaBase.getMonth()
+  const fechaFin = new Date(fechaBase.getFullYear(), mesFin, 1)
+
+  // Calcular diferencia en meses entre inicio y fechaFin
   const totalMeses =
-    (resolucion.getFullYear() - inicio.getFullYear()) * 12 +
-    (resolucion.getMonth() - inicio.getMonth())
+    (fechaFin.getFullYear() - inicio.getFullYear()) * 12 +
+    (fechaFin.getMonth() - inicio.getMonth())
 
   return totalMeses
 }

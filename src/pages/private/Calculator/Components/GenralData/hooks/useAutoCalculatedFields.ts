@@ -86,12 +86,12 @@ export function useAutoCalcularEdadYFechaNacimiento(
 }
 
 /**
- * Auto-calcula la fecha de pérdida de vigencia de derechos a partir de la fecha de baja.
- *
- * @remarks La vigencia se pierde 5 años después de la fecha de baja del IMSS.
+ * Auto-calcula la fecha de vencimiento de derechos a partir de la fecha de baja
+ * y las semanas cotizadas, usando la fórmula: min(semanas/4 * 7, 1716) días.
  */
 export function useAutoCalcularSinVigenciaDerechos(
   fechaBaja: string,
+  semanasCotizadas: string,
   generalData: GeneralDataForm,
   setGeneralData: (data: GeneralDataForm) => void
 ) {
@@ -99,12 +99,13 @@ export function useAutoCalcularSinVigenciaDerechos(
     generalData,
     setGeneralData,
     () => {
-      const sinVigencia = calcularSinVigenciaDerechos(fechaBaja)
+      const semanas = Number(semanasCotizadas) || 0
+      const sinVigencia = calcularSinVigenciaDerechos(fechaBaja, semanas)
       if (sinVigencia === null) return null
       return { sinVigenciaDerechos: sinVigencia }
     },
     ["sinVigenciaDerechos"],
-    [fechaBaja]
+    [fechaBaja, semanasCotizadas]
   )
 }
 

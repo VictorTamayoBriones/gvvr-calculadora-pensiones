@@ -105,7 +105,7 @@ export function useDatosPersonales({
 
   // --- Auto-calculated fields ----------------------------------------------
   useAutoCalcularEdadYFechaNacimiento(generalData.curp, generalData, setGeneralDataWrapper)
-  useAutoCalcularSinVigenciaDerechos(generalData.fechaBaja, generalData, setGeneralDataWrapper)
+  useAutoCalcularSinVigenciaDerechos(generalData.fechaBaja, generalData.semanasCotizadas, generalData, setGeneralDataWrapper)
   useAutoCalcularLeyAplicable(
     generalData.fechaNacimiento,
     generalData.semanasCotizadas,

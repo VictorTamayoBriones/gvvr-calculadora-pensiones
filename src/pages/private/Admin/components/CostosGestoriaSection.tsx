@@ -15,12 +15,10 @@ interface Props {
 }
 
 export function CostosGestoriaSection({ config, open, onToggle, onSave, onReset }: Props) {
-  const [costoGestoria, setCostoGestoria] = useState(config.costoGestoria)
   const [gestoriaFija, setGestoriaFija] = useState(config.gestoriaFija14Meses)
 
   const handleSave = () => {
     onSave("costosGestoria", {
-      costoGestoria,
       gestoriaFija14Meses: gestoriaFija,
     })
   }
@@ -40,23 +38,13 @@ export function CostosGestoriaSection({ config, open, onToggle, onSave, onReset 
       </CardHeader>
       {open && (
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Costo gestoría ($)</Label>
-              <Input
-                type="number"
-                value={costoGestoria}
-                onChange={(e) => setCostoGestoria(Number(e.target.value))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Gestoría fija 14 meses ($)</Label>
-              <Input
-                type="number"
-                value={gestoriaFija}
-                onChange={(e) => setGestoriaFija(Number(e.target.value))}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label>Costo fijo de gestoría ($)</Label>
+            <Input
+              type="number"
+              value={gestoriaFija}
+              onChange={(e) => setGestoriaFija(Number(e.target.value))}
+            />
           </div>
           <div className="flex gap-2 pt-2">
             <Button onClick={handleSave}>Guardar cambios</Button>

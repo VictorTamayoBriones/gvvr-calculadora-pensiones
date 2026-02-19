@@ -21,7 +21,7 @@ import {
 export function useInformeCostoMensual() {
   const { generalData, updateGeneralData } = useCalculator();
 
-  const { handleFechaFirmaChange, handleFechaFinChange, fechaContratoFormateada } =
+  const { handleFechaFirmaChange, fechaContratoFormateada } =
     useContratoDates(generalData, updateGeneralData);
 
   useMontoTotal(generalData, updateGeneralData);
@@ -130,6 +130,5 @@ export function useInformeCostoMensual() {
     validacionesPresupuesto,
     impactoPrestamo,
     handleFechaFirmaChange,
-    handleFechaFinChange,
   };
 }

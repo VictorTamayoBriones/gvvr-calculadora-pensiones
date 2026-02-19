@@ -2,15 +2,15 @@ import { useMemo, useCallback } from 'react';
 import type { GeneralDataForm } from '@/models';
 import {
   calcularFechaInicioContrato,
-  calcularTotalMeses,
-  calcularSemanasAlFinal,
+  calcularTotalMesesDesdeSemanas,
+  calcularDatosFinContrato,
 } from '@/utils/dateCalculations';
 
 /**
  * Gestiona las fechas del contrato: calcula fecha de inicio desde firma,
- * recalcula meses y semanas al cambiar fecha de fin.
+ * y recalcula fechaFinContrato y totalMeses automáticamente.
  *
- * @returns Handlers para cambio de fechas y fecha de contrato formateada
+ * @returns Handler para cambio de fechaFirma y fecha de contrato formateada
  */
 export function useContratoDates(
   generalData: GeneralDataForm,
@@ -19,45 +19,25 @@ export function useContratoDates(
   const handleFechaFirmaChange = useCallback((fechaFirma: string) => {
     const fechaInicioSugerida = calcularFechaInicioContrato(fechaFirma) || '';
 
+    const semanasCotizadasNum = parseInt(generalData.semanasCotizadas) || 0;
+    const totalMesesNum = fechaInicioSugerida
+      ? calcularTotalMesesDesdeSemanas(semanasCotizadasNum, fechaInicioSugerida)
+      : null;
+
+    const datosFin = totalMesesNum !== null
+      ? calcularDatosFinContrato(fechaInicioSugerida, totalMesesNum, semanasCotizadasNum)
+      : null;
+
     updateGeneralData({
       fechaFirmaContrato: fechaFirma,
-      fechaInicioContrato: fechaInicioSugerida
+      fechaInicioContrato: fechaInicioSugerida,
+      ...(totalMesesNum !== null && { totalMeses: totalMesesNum.toString() }),
+      ...(datosFin !== null && {
+        fechaFinContrato: datosFin.fechaFin,
+        semanasAlFinal: datosFin.semanasFinales.toString(),
+      }),
     });
-
-    // Si ya hay fecha fin, recalcular total de meses y semanas
-    if (generalData.fechaFinContrato && fechaInicioSugerida) {
-      const totalMesesNum = calcularTotalMeses(fechaInicioSugerida, generalData.fechaFinContrato);
-      if (totalMesesNum !== null) {
-        const semanasCotizadasNum = parseInt(generalData.semanasCotizadas) || 0;
-        const semanasFinales = calcularSemanasAlFinal(semanasCotizadasNum, totalMesesNum);
-
-        updateGeneralData({
-          totalMeses: totalMesesNum.toString(),
-          semanasAlFinal: semanasFinales.toString()
-        });
-      }
-    }
-  }, [updateGeneralData, generalData.fechaFinContrato, generalData.semanasCotizadas]);
-
-  const handleFechaFinChange = useCallback((fechaFin: string) => {
-    const totalMesesNum = calcularTotalMeses(generalData.fechaInicioContrato, fechaFin);
-
-    if (totalMesesNum !== null) {
-      const semanasCotizadasNum = parseInt(generalData.semanasCotizadas) || 0;
-      const semanasFinales = calcularSemanasAlFinal(semanasCotizadasNum, totalMesesNum);
-
-      updateGeneralData({
-        fechaFinContrato: fechaFin,
-        totalMeses: totalMesesNum.toString(),
-        semanasAlFinal: semanasFinales.toString()
-      });
-    } else {
-      // Si no se puede calcular meses (falta fecha inicio), solo actualizamos la fecha fin
-      updateGeneralData({
-        fechaFinContrato: fechaFin
-      });
-    }
-  }, [updateGeneralData, generalData.fechaInicioContrato, generalData.semanasCotizadas]);
+  }, [updateGeneralData, generalData.semanasCotizadas]);
 
   const fechaContratoFormateada = useMemo(() => {
     if (!generalData.fechaInicioContrato) return '';
@@ -65,5 +45,5 @@ export function useContratoDates(
     return fecha.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: '2-digit' });
   }, [generalData.fechaInicioContrato]);
 
-  return { handleFechaFirmaChange, handleFechaFinChange, fechaContratoFormateada };
+  return { handleFechaFirmaChange, fechaContratoFormateada };
 }

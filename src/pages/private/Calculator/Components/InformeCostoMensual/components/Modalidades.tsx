@@ -91,13 +91,12 @@ export function Modalidades({ generalData }: ModalidadesProps) {
                         return (
                           <tr
                             key={index}
-                            className={`border-b ${
-                              esTotalGeneral
+                            className={`border-b ${esTotalGeneral
                                 ? 'bg-primary/10 font-bold'
                                 : esTotal || esGestoria
                                   ? 'bg-muted/50 font-semibold'
                                   : 'hover:bg-muted/30'
-                            }`}
+                              }`}
                           >
                             <td className="py-2 px-2">{fila.numero > 0 ? fila.numero : ''}</td>
                             <td className="py-2 px-2">{fila.mes}</td>
@@ -127,7 +126,7 @@ export function Modalidades({ generalData }: ModalidadesProps) {
             <h3 className="text-sm font-semibold mb-3">MOD. 3 FINANCIADO 100% (F100+)</h3>
             <div className="text-sm text-muted-foreground">
               {/* Aquí irá el contenido de la segunda tabla */}
-              <p>Contenido de la tabla 2 pendiente...</p>
+              <p>Pending...</p>
             </div>
           </div>
         </div>
