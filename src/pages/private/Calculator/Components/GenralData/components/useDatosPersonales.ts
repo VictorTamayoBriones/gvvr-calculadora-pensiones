@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, type ChangeEvent } from "react"
+import { useState, useCallback, useEffect, useRef, type ChangeEvent } from "react"
 import type { GeneralDataForm } from "@/models"
 import {
   VALIDATORS,
@@ -69,16 +69,19 @@ export function useDatosPersonales({
   })
 
   // --- Handlers ------------------------------------------------------------
+  const touchedRef = useRef(touched)
+  touchedRef.current = touched
+
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target as { name: DatosPersonalesFields; value: string }
       onChange(name, value)
 
-      if (touched[name]) {
+      if (touchedRef.current[name]) {
         setErrors((prev) => ({ ...prev, [name]: VALIDATORS[name](value) }))
       }
     },
-    [onChange, touched]
+    [onChange]
   )
 
   const handleBlur = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -94,9 +97,9 @@ export function useDatosPersonales({
     [onChange]
   )
 
-  // --- Wrapper para setGeneralData -----------------------------------------
-  const setGeneralDataWrapper = useCallback(
-    (data: GeneralDataForm) => {
+  // --- Wrapper para auto-updates -------------------------------------------
+  const updateFieldsWrapper = useCallback(
+    (data: Partial<GeneralDataForm>) => {
       if (!onAutoUpdate) return
       onAutoUpdate(data)
     },
@@ -104,35 +107,38 @@ export function useDatosPersonales({
   )
 
   // --- Auto-calculated fields ----------------------------------------------
-  useAutoCalcularEdadYFechaNacimiento(generalData.curp, generalData, setGeneralDataWrapper)
-  useAutoCalcularSinVigenciaDerechos(generalData.fechaBaja, generalData.semanasCotizadas, generalData, setGeneralDataWrapper)
+  useAutoCalcularEdadYFechaNacimiento(generalData.curp, generalData, updateFieldsWrapper)
+  useAutoCalcularSinVigenciaDerechos(generalData.fechaBaja, generalData.semanasCotizadas, generalData, updateFieldsWrapper)
   useAutoCalcularLeyAplicable(
     generalData.fechaNacimiento,
     generalData.semanasCotizadas,
     generalData.fechaBaja,
     generalData,
-    setGeneralDataWrapper
+    updateFieldsWrapper
   )
   useAutoCalcularFechaInicioContrato(
     generalData.fechaFirmaContrato,
     generalData,
-    setGeneralDataWrapper
+    updateFieldsWrapper
   )
   useAutoCalcularTotalMeses(
     generalData.semanasCotizadas,
     generalData.fechaInicioContrato,
     generalData,
-    setGeneralDataWrapper
+    updateFieldsWrapper
   )
   useAutoCalcularDatosFinContrato(
     generalData.fechaInicioContrato,
     generalData.totalMeses,
     generalData.semanasCotizadas,
     generalData,
-    setGeneralDataWrapper
+    updateFieldsWrapper
   )
 
   // --- Validation ----------------------------------------------------------
+  const generalDataRef = useRef(generalData)
+  generalDataRef.current = generalData
+
   const validate = useCallback((): boolean => {
     const fields: DatosPersonalesFields[] = [
       "nombreAsesor",
@@ -145,11 +151,12 @@ export function useDatosPersonales({
       "fechaInicioContrato",
     ]
 
+    const data = generalDataRef.current
     const newErrors = {} as Pick<FormErrors, DatosPersonalesFields>
     let hasError = false
 
     for (const field of fields) {
-      const msg = VALIDATORS[field](generalData[field])
+      const msg = VALIDATORS[field](data[field])
       newErrors[field] = msg
       if (msg) hasError = true
     }
@@ -167,7 +174,7 @@ export function useDatosPersonales({
     })
 
     return !hasError
-  }, [generalData])
+  }, [])
 
   // Exponer validación al padre
   useEffect(() => {

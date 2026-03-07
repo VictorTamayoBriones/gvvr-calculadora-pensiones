@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState, useEffect } from "react"
+import { useMemo, useCallback, useState, useEffect, useRef } from "react"
 import type { Modalidad } from "@/models"
 import { calcularModalidadesDisponibles } from "../utils/modalidadCalculations"
 import { VALIDATORS } from "../validators"
@@ -56,12 +56,15 @@ export function useModalidad({
   const modalidadSugerida = modalidadesDisponibles.modalidadSugerida
 
   // Validación
+  const modalidadRef = useRef(modalidad)
+  modalidadRef.current = modalidad
+
   const validate = useCallback((): boolean => {
-    const msg = VALIDATORS.modalidad(modalidad)
+    const msg = VALIDATORS.modalidad(modalidadRef.current)
     setError(msg)
     setTouched(true)
     return !msg
-  }, [modalidad])
+  }, [])
 
   // Exponer validación al padre
   useEffect(() => {

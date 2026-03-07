@@ -11,6 +11,7 @@ import {
   getPreciosAnuales,
   getPreciosPrimerMes,
   getGestoriaFija14Meses,
+  getDuracionContrato,
 } from '@/utils/preciosAnuales';
 
 export interface ResultadoCostoTotal {
@@ -124,7 +125,8 @@ export function calcularCostoTotalTramite(
 
   const duracionMeses = diffEnMeses(fechaInicio, fechaFin);
 
-  if (duracionMeses < 14 || duracionMeses > 18) {
+  const duracion = getDuracionContrato();
+  if (duracionMeses < duracion.min || duracionMeses > duracion.max) {
     return null;
   }
 

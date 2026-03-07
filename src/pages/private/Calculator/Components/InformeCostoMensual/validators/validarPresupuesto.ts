@@ -1,4 +1,6 @@
 import { type Modalidad, usaAforeEnModalidad } from "@/models/calculator.types"
+import { getPresupuestoMinimo } from "@/utils/preciosAnuales"
+import { getAdminConfig } from "@/contexts/AdminConfigContext"
 
 interface DatosPresupuesto {
   saldoAfore: number
@@ -61,38 +63,34 @@ export function validarPresupuesto({
   }
 
   // 4. VALIDACIÓN CON MODALIDAD SELECCIONADA
-  const requisitos: { [key: string]: { minimo: number, nombre: string } } = {
-    'REACTIVA TRADICIONAL': { minimo: 62550, nombre: 'REACTIVA TRADICIONAL' },
-    'FINANCIADO 1': { minimo: 62550, nombre: 'FINANCIADO 1' },
-    'FINANCIADO 100': { minimo: 0, nombre: 'FINANCIADO 100' },
-    'REACTIVA FINANCIADO 100': { minimo: 0, nombre: 'REACTIVA FINANCIADO 100' }
-  }
+  const presupuestoMinConfig = getPresupuestoMinimo()
+  const minimo = presupuestoMinConfig[modalidad] ?? 0
 
-  const req = requisitos[modalidad]
-  if (req) {
+  {
     const presupuestoDisponible = usaAfore ? saldoAfore + prestamoFinanciero : prestamoFinanciero
 
-    if (presupuestoDisponible < req.minimo && req.minimo > 0) {
-      const faltante = req.minimo - presupuestoDisponible
+    if (presupuestoDisponible < minimo && minimo > 0) {
+      const faltante = minimo - presupuestoDisponible
       errores.push(
-        `Presupuesto insuficiente para ${req.nombre}. ` +
-        `Requiere $${req.minimo.toLocaleString('es-MX')}, ` +
+        `Presupuesto insuficiente para ${modalidad}. ` +
+        `Requiere $${minimo.toLocaleString('es-MX')}, ` +
         `tiene $${presupuestoDisponible.toLocaleString('es-MX')}. ` +
         `Falta: $${faltante.toLocaleString('es-MX')}`
       )
-    } else if (presupuestoDisponible >= req.minimo && req.minimo > 0) {
-      const sobrante = presupuestoDisponible - req.minimo
+    } else if (presupuestoDisponible >= minimo && minimo > 0) {
+      const sobrante = presupuestoDisponible - minimo
       info.push(
-        `✓ Presupuesto suficiente para ${req.nombre}. ` +
+        `✓ Presupuesto suficiente para ${modalidad}. ` +
         `Sobrante: $${sobrante.toLocaleString('es-MX')}`
       )
     }
   }
 
   // 5. RESTRICCIÓN DE EDAD PARA REACTIVA FINANCIADO 100
-  if (modalidad === 'REACTIVA FINANCIADO 100' && edad >= 68) {
+  const edadMaxF100 = Math.floor(getAdminConfig().edadMaximaReactivaF100 / 12)
+  if (modalidad === 'REACTIVA FINANCIADO 100' && edad >= edadMaxF100) {
     errores.push(
-      "⚠️ RESTRICCIÓN CRÍTICA: REACTIVA FINANCIADO 100% solo es viable para menores de 68 años"
+      `⚠️ RESTRICCIÓN CRÍTICA: REACTIVA FINANCIADO 100% solo es viable para menores de ${edadMaxF100} años`
     )
   }
 

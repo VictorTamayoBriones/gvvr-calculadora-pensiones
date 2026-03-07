@@ -12,6 +12,7 @@ import {
   getPreciosPrimerMes,
   getGestoriaFija14Meses,
   getPagoMensualGestoriaRetoma,
+  getDuracionContrato,
   type PrecioAnual,
   type PrecioPrimerMes,
 } from '@/utils/preciosAnuales';
@@ -251,12 +252,13 @@ export function calcularLineaTiempo(input: LineaTiempoInput): LineaTiempoOutput 
 
     const duracionMeses = diffEnMeses(fechaAlta, fechaFin);
 
-    // Validar duración entre 14-18 meses
-    if (duracionMeses < 14 || duracionMeses > 18) {
+    // Validar duración
+    const duracion = getDuracionContrato();
+    if (duracionMeses < duracion.min || duracionMeses > duracion.max) {
       return {
         success: false,
         errores: [
-          `La duración debe estar entre 14 y 18 meses. Duración actual: ${duracionMeses} meses. ` +
+          `La duración debe estar entre ${duracion.min} y ${duracion.max} meses. Duración actual: ${duracionMeses} meses. ` +
             `Ajuste las fechas del contrato.`,
         ],
       };

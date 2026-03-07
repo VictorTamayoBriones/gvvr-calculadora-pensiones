@@ -1,9 +1,11 @@
 import { useAdmin } from "./useAdmin"
 import { ValidacionesSection } from "./components/ValidacionesSection"
+import { ValidacionesContratoSection } from "./components/ValidacionesContratoSection"
 import { CalculosPrestamoSection } from "./components/CalculosPrestamoSection"
 import { CostosGestoriaSection } from "./components/CostosGestoriaSection"
 import { PreciosAnualesSection } from "./components/PreciosAnualesSection"
 import { PreciosPrimerMesSection } from "./components/PreciosPrimerMesSection"
+import { PresupuestoSection } from "./components/PresupuestoSection"
 import { TablaPensionesSection } from "./components/TablaPensionesSection"
 
 export default function Admin() {
@@ -20,6 +22,14 @@ export default function Admin() {
         config={config}
         open={openSections.validaciones}
         onToggle={() => toggleSection("validaciones")}
+        onSave={handleSave}
+        onReset={handleReset}
+      />
+
+      <ValidacionesContratoSection
+        config={config}
+        open={openSections.validacionesContrato}
+        onToggle={() => toggleSection("validacionesContrato")}
         onSave={handleSave}
         onReset={handleReset}
       />
@@ -52,6 +62,14 @@ export default function Admin() {
         config={config}
         open={openSections.preciosPrimerMes}
         onToggle={() => toggleSection("preciosPrimerMes")}
+        onSave={handleSave}
+        onReset={handleReset}
+      />
+
+      <PresupuestoSection
+        config={config}
+        open={openSections.presupuesto}
+        onToggle={() => toggleSection("presupuesto")}
         onSave={handleSave}
         onReset={handleReset}
       />

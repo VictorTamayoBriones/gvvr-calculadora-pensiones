@@ -5,10 +5,12 @@ export function useAdmin() {
   const { config, updateConfig, resetSection } = useAdminConfig()
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     validaciones: true,
+    validacionesContrato: false,
     calculosPrestamo: false,
     costosGestoria: false,
     preciosAnuales: false,
     preciosPrimerMes: false,
+    presupuesto: false,
     tablaPensiones: false,
   })
 

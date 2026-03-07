@@ -1,4 +1,5 @@
 import { getTablaPensiones, getAñosDisponibles, getRangoEdades } from '@/utils/tablaPensiones';
+import { getEdadesValidacion } from '@/utils/preciosAnuales';
 
 /**
  * Tipos para el resultado del cálculo
@@ -160,17 +161,18 @@ export function calcularMontoPension(
     // ================================================
 
     const edadActual = calcularEdadPrecisa(fechaNacimiento);
+    const edades = getEdadesValidacion();
 
-    // Validar edad mínima razonable (50 años para iniciar proceso)
-    if (edadActual < 50) {
+    // Validar edad mínima razonable
+    if (edadActual < edades.proceso) {
       return {
         success: false,
-        errores: ['El cliente debe tener al menos 50 años para iniciar el proceso de pensión'],
+        errores: [`El cliente debe tener al menos ${edades.proceso} años para iniciar el proceso de pensión`],
       };
     }
 
     // Advertencia si edad muy avanzada
-    if (edadActual > 85) {
+    if (edadActual > edades.alerta) {
       advertencias.push('Cliente tiene edad muy avanzada. Verifique los datos.');
     }
 

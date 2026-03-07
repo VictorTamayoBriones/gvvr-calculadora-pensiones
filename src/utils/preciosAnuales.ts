@@ -81,3 +81,48 @@ export function getGestoriaFija14Meses(): number {
 export function getPagoMensualGestoriaRetoma(): Record<number, number> {
   return getAdminConfig().pagoMensualGestoriaRetoma
 }
+export function getCargoFijoF100Plus(): number {
+  return getAdminConfig().cargoFijoF100Plus
+}
+export function getTarifasPrimerMesF100(): { despuesDeAnio: number; tarifa: number }[] {
+  return getAdminConfig().tarifasPrimerMesF100
+}
+export function getGestoriaF100(): Record<number, number> {
+  return getAdminConfig().gestoriaF100
+}
+
+// ---------------------------------------------------------------------------
+// Getters de validaciones y constantes de negocio
+// ---------------------------------------------------------------------------
+export function getEdadesValidacion() {
+  const c = getAdminConfig()
+  return {
+    programa: c.edadMinimaPrograma,
+    pension: c.edadMinimaPension,
+    proceso: c.edadMinimaProceso,
+    alerta: c.edadAlertaAvanzada,
+  }
+}
+export function getSemanasMinimas() {
+  const c = getAdminConfig()
+  return { ley73: c.semanasMinLey73, ley97: c.semanasMinLey97 }
+}
+export function getTopeDiasConservacion(): number {
+  return getAdminConfig().topeDiasConservacion
+}
+export function getDuracionContrato() {
+  const c = getAdminConfig()
+  return { min: c.duracionMinimaContrato, max: c.duracionMaximaContrato }
+}
+export function getValidacionesContrato() {
+  const c = getAdminConfig()
+  return {
+    mesesMaxPrevio: c.mesesMaxPrevioFirma,
+    mesesMaxPosterior: c.mesesMaxPosteriorFirma,
+    advertenciaLargo: c.advertenciaContratoLargo,
+    advertenciaMuyLargo: c.advertenciaContratoMuyLargo,
+  }
+}
+export function getPresupuestoMinimo(): Record<string, number> {
+  return getAdminConfig().presupuestoMinimo
+}

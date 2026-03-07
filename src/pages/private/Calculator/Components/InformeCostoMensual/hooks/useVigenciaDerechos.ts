@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { formatearFechaCompleta } from '@/utils/dateCalculations';
 
 /**
  * Determina si el cliente tiene vigencia de derechos ante el IMSS.
@@ -24,7 +25,7 @@ export function useVigenciaDerechos(sinVigenciaDerechos: string) {
       const diasRestantes = Math.floor((sinVigencia.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
       return {
         tipo: 'vigente' as const,
-        mensaje: `El cliente mantiene vigencia de derechos hasta el ${sinVigencia.toLocaleDateString('es-MX')} (${diasRestantes} días restantes)`
+        mensaje: `El cliente mantiene vigencia de derechos hasta el ${formatearFechaCompleta(sinVigencia)} (${diasRestantes} días restantes)`
       };
     } else {
       const tiempoVencido = hoy.getTime() - sinVigencia.getTime();
@@ -33,7 +34,7 @@ export function useVigenciaDerechos(sinVigenciaDerechos: string) {
 
       return {
         tipo: 'vencido' as const,
-        mensaje: `⚠️ ATENCIÓN: El cliente perdió vigencia de derechos el ${sinVigencia.toLocaleDateString('es-MX')}`,
+        mensaje: `⚠️ ATENCIÓN: El cliente perdió vigencia de derechos el ${formatearFechaCompleta(sinVigencia)}`,
         detalle: `Hace ${añosVencido} años y ${mesesVencido} meses que no tiene vigencia`,
         accion: 'REQUIERE recuperación de derechos mediante cotización al IMSS'
       };

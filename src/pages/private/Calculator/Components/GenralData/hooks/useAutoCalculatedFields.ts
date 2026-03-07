@@ -25,17 +25,20 @@ import {
  * Nota sobre exhaustive-deps: Los hooks que llaman a useAutoField pasan
  * solo las dependencias del cálculo (ej: [curp], [fechaBaja]), no el estado
  * completo. Esto es intencional para evitar loops infinitos y mantener el
- * comportamiento predecible. generalData y setGeneralData se consideran estables.
+ * comportamiento predecible.
  *
- * @param generalData - Estado actual del formulario
- * @param setGeneralData - Función para actualizar el estado
+ * updateFields usa partial updates (vía updateGeneralData del contexto) para
+ * evitar stale state al hacer spread con generalData dentro del effect.
+ *
+ * @param generalData - Estado actual del formulario (solo lectura para comparación)
+ * @param updateFields - Función para aplicar partial updates al estado
  * @param compute - Función que calcula los valores derivados
  * @param fieldsToCheck - Campos a limpiar si compute() retorna null
  * @param deps - Array de dependencias para el useEffect (controlado por el caller)
  */
 function useAutoField(
   generalData: GeneralDataForm,
-  setGeneralData: (data: GeneralDataForm) => void,
+  updateFields: (data: Partial<GeneralDataForm>) => void,
   compute: () => Partial<GeneralDataForm> | null,
   fieldsToCheck: (keyof GeneralDataForm)[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,7 +51,7 @@ function useAutoField(
       const needsClear = fieldsToCheck.some((f) => generalData[f])
       if (needsClear) {
         const cleared = Object.fromEntries(fieldsToCheck.map((f) => [f, ""]))
-        setGeneralData({ ...generalData, ...cleared } as GeneralDataForm)
+        updateFields(cleared)
       }
       return
     }
@@ -57,7 +60,7 @@ function useAutoField(
       ([k, v]) => generalData[k as keyof GeneralDataForm] !== v
     )
     if (hasChanged) {
-      setGeneralData({ ...generalData, ...result })
+      updateFields(result)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
@@ -70,11 +73,11 @@ function useAutoField(
 export function useAutoCalcularEdadYFechaNacimiento(
   curp: string,
   generalData: GeneralDataForm,
-  setGeneralData: (data: GeneralDataForm) => void
+  updateFields: (data: Partial<GeneralDataForm>) => void
 ) {
   useAutoField(
     generalData,
-    setGeneralData,
+    updateFields,
     () => {
       const datos = extraerDatosNacimientoDesdeCURP(curp)
       if (!datos) return null
@@ -93,11 +96,11 @@ export function useAutoCalcularSinVigenciaDerechos(
   fechaBaja: string,
   semanasCotizadas: string,
   generalData: GeneralDataForm,
-  setGeneralData: (data: GeneralDataForm) => void
+  updateFields: (data: Partial<GeneralDataForm>) => void
 ) {
   useAutoField(
     generalData,
-    setGeneralData,
+    updateFields,
     () => {
       const semanas = Number(semanasCotizadas) || 0
       const sinVigencia = calcularSinVigenciaDerechos(fechaBaja, semanas)
@@ -118,11 +121,11 @@ export function useAutoCalcularLeyAplicable(
   semanasCotizadas: string,
   fechaBaja: string,
   generalData: GeneralDataForm,
-  setGeneralData: (data: GeneralDataForm) => void
+  updateFields: (data: Partial<GeneralDataForm>) => void
 ) {
   useAutoField(
     generalData,
-    setGeneralData,
+    updateFields,
     () => {
       const semanas = Number(semanasCotizadas) || 0
       const ley = calcularLeyAplicable(fechaNacimiento, semanas, fechaBaja)
@@ -141,11 +144,11 @@ export function useAutoCalcularLeyAplicable(
 export function useAutoCalcularFechaInicioContrato(
   fechaFirmaContrato: string,
   generalData: GeneralDataForm,
-  setGeneralData: (data: GeneralDataForm) => void
+  updateFields: (data: Partial<GeneralDataForm>) => void
 ) {
   useAutoField(
     generalData,
-    setGeneralData,
+    updateFields,
     () => {
       if (!fechaFirmaContrato) return {}
       const fechaInicio = calcularFechaInicioContrato(fechaFirmaContrato)
@@ -169,11 +172,11 @@ export function useAutoCalcularTotalMeses(
   semanasCotizadas: string,
   fechaInicioContrato: string,
   generalData: GeneralDataForm,
-  setGeneralData: (data: GeneralDataForm) => void
+  updateFields: (data: Partial<GeneralDataForm>) => void
 ) {
   useAutoField(
     generalData,
-    setGeneralData,
+    updateFields,
     () => {
       const semanas = Number(semanasCotizadas) || 0
       const totalMeses = calcularTotalMesesDesdeSemanas(semanas, fechaInicioContrato)
@@ -194,11 +197,11 @@ export function useAutoCalcularDatosFinContrato(
   totalMeses: string,
   semanasCotizadas: string,
   generalData: GeneralDataForm,
-  setGeneralData: (data: GeneralDataForm) => void
+  updateFields: (data: Partial<GeneralDataForm>) => void
 ) {
   useAutoField(
     generalData,
-    setGeneralData,
+    updateFields,
     () => {
       const meses = Number(totalMeses) || 0
       const semanasIniciales = Number(semanasCotizadas) || 0

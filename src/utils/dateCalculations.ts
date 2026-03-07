@@ -1,4 +1,5 @@
 import { extractBirthdateFromCURP } from "@/helpers/extractBirthdateFromCURP"
+import { getTopeDiasConservacion } from "@/utils/preciosAnuales"
 
 // ---------------------------------------------------------------------------
 // Date calculation functions
@@ -55,8 +56,6 @@ export function extraerDatosNacimientoDesdeCURP(curp: string): {
  * 3. Tope máximo = min(días, 1716)
  * 4. Fecha vencimiento = fechaBaja + días definitivos
  */
-const TOPE_MAXIMO_DIAS_CONSERVACION = 1716
-
 export function calcularSinVigenciaDerechos(fechaBaja: string, semanasCotizadas: number): string | null {
   if (!fechaBaja.trim() || !semanasCotizadas || semanasCotizadas <= 0) {
     return null
@@ -66,7 +65,7 @@ export function calcularSinVigenciaDerechos(fechaBaja: string, semanasCotizadas:
     // Paso 2-3: Calcular días de conservación con tope
     const periodoConservacionSemanas = semanasCotizadas / 4
     const diasConservacion = Math.floor(periodoConservacionSemanas * 7)
-    const diasDefinitivos = Math.min(diasConservacion, TOPE_MAXIMO_DIAS_CONSERVACION)
+    const diasDefinitivos = Math.min(diasConservacion, getTopeDiasConservacion())
 
     // Paso 4: Sumar días a la fecha de baja (parsing sin timezone)
     const [anio, mes, dia] = fechaBaja.split('-').map(Number)
@@ -207,6 +206,39 @@ export function calcularSemanasAlFinal(semanasIniciales: number, totalMeses: num
   return semanasIniciales + (totalMeses * 4)
 }
 
+// ---------------------------------------------------------------------------
+// Formateo de fechas centralizado
+// ---------------------------------------------------------------------------
+
+const formatterMesAnio = new Intl.DateTimeFormat('es-MX', { month: 'long', year: 'numeric' });
+const formatterFechaCompleta = new Intl.DateTimeFormat('es-MX');
+
+/**
+ * Formatea una fecha como "enero 2027" (mes largo + año)
+ */
+export function formatearMesAnio(fecha: Date): string {
+  return formatterMesAnio.format(fecha).toUpperCase();
+}
+
+/**
+ * Formatea una fecha ISO (YYYY-MM-DD) como "dd/mm/yy"
+ */
+export function formatearFechaCorta(dateString: string): string {
+  if (!dateString) return '';
+  const [year, month, day] = dateString.split('-');
+  if (year && month && day) {
+    return `${day}/${month}/${year.slice(2)}`;
+  }
+  return dateString;
+}
+
+/**
+ * Formatea una fecha como localización completa es-MX (dd/mm/yyyy)
+ */
+export function formatearFechaCompleta(fecha: Date): string {
+  return formatterFechaCompleta.format(fecha);
+}
+
 /**
  * Helper function to parse ISO date strings without timezone issues
  * Used in InformeCostoMensual for date parsing
@@ -215,6 +247,27 @@ export function parseISODate(dateString: string): Date {
   if (!dateString) return new Date()
   const [year, month, day] = dateString.split('-').map(Number)
   return new Date(year, month - 1, day)
+}
+
+export function calcularFechaResolucion(
+  semanasCotizadas: number,
+  fechaInicioContrato: string
+): Date | null {
+  if (!semanasCotizadas || semanasCotizadas <= 0 || !fechaInicioContrato.trim()) {
+    return null
+  }
+
+  // Calcular días hasta resolución
+  const diasHastaResolucion = semanasCotizadas > 448
+    ? 441 // 63 semanas × 7 días
+    : (510 - semanasCotizadas) * 7
+
+  // Parsear fecha sin timezone para evitar desplazamiento UTC
+  const [anioI, mesI, diaI] = fechaInicioContrato.split('-').map(Number)
+
+  // Calcular fecha base sumando días (JS desborda el día automáticamente al mes correcto)
+  const fechaBase = new Date(anioI, mesI - 1, diaI + diasHastaResolucion)
+  return fechaBase;
 }
 
 /**
@@ -233,21 +286,12 @@ export function calcularTotalMesesDesdeSemanas(
   semanasCotizadas: number,
   fechaInicioContrato: string
 ): number | null {
-  if (!semanasCotizadas || semanasCotizadas <= 0 || !fechaInicioContrato.trim()) {
-    return null
-  }
+  const fechaBase = calcularFechaResolucion(semanasCotizadas, fechaInicioContrato);
 
-  // Calcular días hasta resolución
-  const diasHastaResolucion = semanasCotizadas > 448
-    ? 441 // 63 semanas × 7 días
-    : (510 - semanasCotizadas) * 7
+  if (!fechaBase) return null;
 
-  // Parsear fecha sin timezone para evitar desplazamiento UTC
   const [anioI, mesI, diaI] = fechaInicioContrato.split('-').map(Number)
   const inicio = new Date(anioI, mesI - 1, diaI)
-
-  // Calcular fecha base sumando días (JS desborda el día automáticamente al mes correcto)
-  const fechaBase = new Date(anioI, mesI - 1, diaI + diasHastaResolucion)
 
   // Redondear al día 1 según quincena:
   // - Día ≤ 15 → primer día del mismo mes

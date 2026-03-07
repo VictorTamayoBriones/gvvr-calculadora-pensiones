@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useEffect } from 'react';
+import { useMemo, useEffect } from 'react';
 import type { GeneralDataForm } from '@/models';
 import { usaAforeEnModalidad } from '@/models/calculator.types';
 
@@ -11,7 +11,7 @@ export function useMontoTotal(
   updateGeneralData: (data: Partial<GeneralDataForm>) => void
 ) {
   // REGLA CRÍTICA: El saldo AFORE solo se usa en modalidades REACTIVA TRADICIONAL y FINANCIADO 1
-  const calcularMontoTotal = useCallback(() => {
+  const montoTotalCalculado = useMemo(() => {
     const saldoAfore = parseFloat(generalData.saldoAfore) || 0;
     const prestamoFinanciero = parseFloat(generalData.prestamoFinanciero) || 0;
 
@@ -26,10 +26,6 @@ export function useMontoTotal(
     }
     return '';
   }, [generalData.saldoAfore, generalData.prestamoFinanciero, generalData.modalidad]);
-
-  const montoTotalCalculado = useMemo(() => {
-    return calcularMontoTotal();
-  }, [calcularMontoTotal]);
 
   // Sincronizar el monto total calculado con el estado
   useEffect(() => {

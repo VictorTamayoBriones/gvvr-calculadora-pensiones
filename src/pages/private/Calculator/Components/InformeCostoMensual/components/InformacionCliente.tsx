@@ -3,6 +3,7 @@ import { Field, FieldContent, FieldGroup, FieldLabel } from '@/components/ui/fie
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { GeneralDataForm } from '@/models';
+import { formatearFechaCompleta } from '@/utils/dateCalculations';
 import { VigenciaDerechosInfo } from './VigenciaDerechosInfo';
 import { ValidationMessages } from './ValidationMessages';
 
@@ -143,7 +144,7 @@ export function InformacionCliente({
                     Sin vigencia de derechos
                     {generalData.sinVigenciaDerechos && (
                       <span className="text-muted-foreground ml-2">
-                        (Desde: {new Date(generalData.sinVigenciaDerechos).toLocaleDateString('es-MX')})
+                        (Desde: {formatearFechaCompleta(new Date(generalData.sinVigenciaDerechos))})
                       </span>
                     )}
                   </span>

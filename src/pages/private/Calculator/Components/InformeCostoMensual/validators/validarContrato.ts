@@ -1,4 +1,5 @@
 import { parseISODate } from "@/utils/dateCalculations"
+import { getDuracionContrato, getValidacionesContrato, getSemanasMinimas } from "@/utils/preciosAnuales"
 
 interface DatosContrato {
   fechaFirmaContrato: string
@@ -36,6 +37,9 @@ export function validarContrato({
   const errores: string[] = []
   const advertencias: string[] = []
   const info: string[] = []
+  const duracion = getDuracionContrato()
+  const valContrato = getValidacionesContrato()
+  const semanas = getSemanasMinimas()
 
   // Solo validar si hay datos del contrato
   const tieneAlgunDato = fechaFirmaContrato ||
@@ -73,14 +77,14 @@ export function validarContrato({
       const diffMeses = (fechaFirma.getFullYear() - fechaInicio.getFullYear()) * 12
                       + (fechaFirma.getMonth() - fechaInicio.getMonth())
 
-      // No puede ser más de 6 meses anterior
-      if (diffMeses > 6) {
-        errores.push("La fecha de inicio no puede ser más de 6 meses anterior a la fecha de firma")
+      // No puede ser más de N meses anterior
+      if (diffMeses > valContrato.mesesMaxPrevio) {
+        errores.push(`La fecha de inicio no puede ser más de ${valContrato.mesesMaxPrevio} meses anterior a la fecha de firma`)
       }
 
-      // No puede ser más de 2 meses posterior
-      if (diffMeses < -2) {
-        errores.push("La fecha de inicio no puede ser más de 2 meses posterior a la fecha de firma")
+      // No puede ser más de N meses posterior
+      if (diffMeses < -valContrato.mesesMaxPosterior) {
+        errores.push(`La fecha de inicio no puede ser más de ${valContrato.mesesMaxPosterior} meses posterior a la fecha de firma`)
       }
     }
 
@@ -115,9 +119,9 @@ export function validarContrato({
   const totalMeses = Number(totalMesesStr) || 0
 
   if (totalMeses > 0) {
-    // CRÍTICO: Mínimo 14 meses
-    if (totalMeses < 14) {
-      errores.push("❌ CRÍTICO: El contrato debe ser de al menos 14 meses para recuperar derechos ante el IMSS")
+    // CRÍTICO: Mínimo N meses
+    if (totalMeses < duracion.min) {
+      errores.push(`❌ CRÍTICO: El contrato debe ser de al menos ${duracion.min} meses para recuperar derechos ante el IMSS`)
     }
 
     // Validar coherencia con fechas
@@ -133,9 +137,9 @@ export function validarContrato({
     }
 
     // Advertencia para contratos largos
-    if (totalMeses > 24 && totalMeses <= 36) {
+    if (totalMeses > valContrato.advertenciaLargo && totalMeses <= valContrato.advertenciaMuyLargo) {
       advertencias.push(`Contrato de ${totalMeses} meses es más largo que el promedio. Verifique si es necesario.`)
-    } else if (totalMeses > 36) {
+    } else if (totalMeses > valContrato.advertenciaMuyLargo) {
       advertencias.push(`⚠️ Contrato muy largo de ${totalMeses} meses. Considere reducir la duración.`)
     }
   }
@@ -154,11 +158,11 @@ export function validarContrato({
     }
 
     // Solo mostrar validaciones de ley si el cálculo es correcto y el contrato cumple mínimo
-    if (calculoCorrecto && totalMeses >= 14) {
+    if (calculoCorrecto && totalMeses >= duracion.min) {
       if (leyAplicable) {
         const requisitos: { [key: string]: number } = {
-          'LEY_73': 500,
-          'LEY_97': 1250
+          'LEY_73': semanas.ley73,
+          'LEY_97': semanas.ley97,
         }
 
         const minimoRequerido = requisitos[leyAplicable]

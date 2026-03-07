@@ -17,6 +17,21 @@ export interface AdminConfig {
   minimoSaldoAfore: number
   edadMinimaMeses: number
   edadMaximaReactivaF100: number
+  edadMinimaPrograma: number
+  edadMinimaPension: number
+  semanasMinLey73: number
+  semanasMinLey97: number
+  edadMinimaProceso: number
+  edadAlertaAvanzada: number
+  topeDiasConservacion: number
+
+  // Validaciones de contrato
+  mesesMaxPrevioFirma: number
+  mesesMaxPosteriorFirma: number
+  duracionMinimaContrato: number
+  duracionMaximaContrato: number
+  advertenciaContratoLargo: number
+  advertenciaContratoMuyLargo: number
 
   // Cálculos de préstamo
   factorPrestamoMultiplicador: number
@@ -33,6 +48,14 @@ export interface AdminConfig {
   preciosPrimerMes: PrecioPrimerMes[]
   pagoMensualGestoriaRetoma: Record<number, number>
 
+  // F100
+  cargoFijoF100Plus: number
+  tarifasPrimerMesF100: { despuesDeAnio: number; tarifa: number }[]
+  gestoriaF100: Record<number, number>
+
+  // Presupuesto mínimo por modalidad
+  presupuestoMinimo: Record<string, number>
+
   // Tabla de pensiones
   tablaPensiones: Record<number, Record<number, number>>
 }
@@ -45,6 +68,20 @@ export const DEFAULT_CONFIG: AdminConfig = {
   minimoSaldoAfore: 15_000,
   edadMinimaMeses: 702,
   edadMaximaReactivaF100: 816,
+  edadMinimaPrograma: 55,
+  edadMinimaPension: 60,
+  semanasMinLey73: 500,
+  semanasMinLey97: 1250,
+  edadMinimaProceso: 50,
+  edadAlertaAvanzada: 85,
+  topeDiasConservacion: 1716,
+
+  mesesMaxPrevioFirma: 6,
+  mesesMaxPosteriorFirma: 2,
+  duracionMinimaContrato: 14,
+  duracionMaximaContrato: 18,
+  advertenciaContratoLargo: 24,
+  advertenciaContratoMuyLargo: 36,
 
   factorPrestamoMultiplicador: 9,
   prestamoDescuento: 10_000,
@@ -77,6 +114,22 @@ export const DEFAULT_CONFIG: AdminConfig = {
     2026: 3200,
     2027: 3950,
     2028: 4700,
+  },
+
+  cargoFijoF100Plus: 4850,
+  tarifasPrimerMesF100: [
+    { despuesDeAnio: 2026, tarifa: 4650 },
+    { despuesDeAnio: 2025, tarifa: 4200 },
+    { despuesDeAnio: 2024, tarifa: 3800 },
+    { despuesDeAnio: 2023, tarifa: 3500 },
+  ],
+  gestoriaF100: { 14: 18_000, 15: 16_000 },
+
+  presupuestoMinimo: {
+    "REACTIVA TRADICIONAL": 62_550,
+    "FINANCIADO 1": 62_550,
+    "FINANCIADO 100": 0,
+    "REACTIVA FINANCIADO 100": 0,
   },
 
   tablaPensiones: {
@@ -159,10 +212,12 @@ export function getAdminConfig(): AdminConfig {
 // ---------------------------------------------------------------------------
 export type ConfigSection =
   | "validaciones"
+  | "validacionesContrato"
   | "calculosPrestamo"
   | "costosGestoria"
   | "preciosAnuales"
   | "preciosPrimerMes"
+  | "presupuesto"
   | "tablaPensiones"
 
 const SECTION_KEYS: Record<ConfigSection, (keyof AdminConfig)[]> = {
@@ -171,6 +226,21 @@ const SECTION_KEYS: Record<ConfigSection, (keyof AdminConfig)[]> = {
     "minimoSaldoAfore",
     "edadMinimaMeses",
     "edadMaximaReactivaF100",
+    "edadMinimaPrograma",
+    "edadMinimaPension",
+    "semanasMinLey73",
+    "semanasMinLey97",
+    "edadMinimaProceso",
+    "edadAlertaAvanzada",
+    "topeDiasConservacion",
+  ],
+  validacionesContrato: [
+    "mesesMaxPrevioFirma",
+    "mesesMaxPosteriorFirma",
+    "duracionMinimaContrato",
+    "duracionMaximaContrato",
+    "advertenciaContratoLargo",
+    "advertenciaContratoMuyLargo",
   ],
   calculosPrestamo: [
     "factorPrestamoMultiplicador",
@@ -179,8 +249,9 @@ const SECTION_KEYS: Record<ConfigSection, (keyof AdminConfig)[]> = {
     "mesesRetencionPrestamo",
   ],
   costosGestoria: ["costoGestoria", "gestoriaFija14Meses"],
-  preciosAnuales: ["preciosAnuales", "pagoMensualGestoriaRetoma"],
+  preciosAnuales: ["preciosAnuales", "pagoMensualGestoriaRetoma", "cargoFijoF100Plus", "tarifasPrimerMesF100", "gestoriaF100"],
   preciosPrimerMes: ["preciosPrimerMes"],
+  presupuesto: ["presupuestoMinimo"],
   tablaPensiones: ["tablaPensiones"],
 }
 

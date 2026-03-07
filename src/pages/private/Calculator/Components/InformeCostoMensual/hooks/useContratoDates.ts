@@ -4,6 +4,7 @@ import {
   calcularFechaInicioContrato,
   calcularTotalMesesDesdeSemanas,
   calcularDatosFinContrato,
+  formatearFechaCorta,
 } from '@/utils/dateCalculations';
 
 /**
@@ -40,9 +41,7 @@ export function useContratoDates(
   }, [updateGeneralData, generalData.semanasCotizadas]);
 
   const fechaContratoFormateada = useMemo(() => {
-    if (!generalData.fechaInicioContrato) return '';
-    const fecha = new Date(generalData.fechaInicioContrato);
-    return fecha.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: '2-digit' });
+    return formatearFechaCorta(generalData.fechaInicioContrato);
   }, [generalData.fechaInicioContrato]);
 
   return { handleFechaFirmaChange, fechaContratoFormateada };
